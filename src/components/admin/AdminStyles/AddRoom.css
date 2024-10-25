@@ -1,0 +1,60 @@
+.add-room-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+  }
+  
+
+   
+  
+  .add-room-container form {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .add-room-container input,
+  .add-room-container textarea,
+  .add-room-container select,
+  .add-room-container button {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+  }
+  
+  .add-room-container input:focus,
+  .add-room-container textarea:focus,
+  .add-room-container select:focus {
+    border-color: #4caf50;
+  }
+  
+  .add-room-container textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+  
+  .add-room-container button {
+    background-color: #4caf50;
+    color: white;
+    cursor: pointer;
+    border: none;
+  }
+  
+  .add-room-container button:hover {
+    background-color: #45a049;
+  }
+  
+  .add-room-container .error {
+    color: #e74c3c;
+    font-size: 14px;
+    margin-top: 10px;
+  }

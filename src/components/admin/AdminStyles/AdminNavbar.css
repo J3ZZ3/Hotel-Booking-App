@@ -1,0 +1,37 @@
+.admin-navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    justify-content: center;
+    background-color: #333;
+    padding: 1em;
+    color: #fff;
+    width: 100%;
+}
+
+.admin-app {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-right: auto;
+}
+
+
+
+
+.admin-dash {
+    color: white;
+    text-decoration: none;
+}
+
+.admin-dash:hover {
+    color: black;
+}
+
+.client-books {
+    color: white;
+    text-decoration: none;
+}
+
+.client-books:hover {
+    color: black;
+}

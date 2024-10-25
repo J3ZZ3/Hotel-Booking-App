@@ -1,0 +1,97 @@
+.homepage {
+    font-family: Arial, sans-serif;
+  }
+  
+  .hero-section {
+    background-image: url('../components/assets/hp1.jpg'); /* Assuming the hero image is also in src/assets */
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  
+  .overlay {
+    background-color: rgba(0, 0, 0, 0.6); /* Dark overlay on the hero image */
+    color: white;
+    text-align: center;
+    padding: 2rem;
+  }
+  
+  .overlay h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: white;
+  }
+  
+  .overlay p {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  .get-started-btn {
+    padding: 1rem 2rem;
+    font-size: 1.2rem;
+    background-color: grey;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .get-started-btn:hover {
+    background-color: red;
+  }
+  
+  .feature-section {
+    background-color: rgba(226, 82, 82, 0.493);
+    padding: 4rem;
+    text-align: center;
+  }
+  
+  .feature-section h2 {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  .feature-cards {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 2rem;
+    gap: 20px;
+  }
+  
+  .card {
+    width: 30%;
+    padding: 1rem;
+    background-color: transparent;
+    border-radius: 10px;
+    border-color: transparent;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .card img {
+    width: 100%;
+    border-radius: 10px;
+    height: 200px;
+    object-fit: cover;
+  }
+  
+  .card h3 {
+    font-size: 1.5rem;
+    margin-top: 1rem;
+  }
+  
+  .card p {
+    font-size: 1rem;
+    margin-top: 0.5rem;
+  }
+  
+  .card:hover {
+    transform: translateY(-10px); /* Move the card up slightly */
+  }

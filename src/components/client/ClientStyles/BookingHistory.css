@@ -1,0 +1,18 @@
+
+
+.rating-input {
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    width: 5%;
+    height: 100%;
+    margin-right: 2%;
+    margin-left: 2%;
+}
+
+.submit-rating{
+    width: 20%;
+    font-size: small;
+    
+}

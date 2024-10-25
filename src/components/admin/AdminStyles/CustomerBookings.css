@@ -1,0 +1,90 @@
+/* General Container */
+.customer-bookings-cb {
+  background-color: #2b2f42;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  min-height: 100vh;
+}
+
+/* Overlay for overall styling */
+.overlay-cb {
+  max-width: 900px;
+  width: 100%;
+  background-color: #00000056;
+  border-radius: 10px;
+  padding: 2rem;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  text-align: center;
+  color: #ffffff;
+  margin-bottom: 1.5rem;
+}
+
+/* Booking Card */
+.booking-card-cb {
+  background-color: #ececec63;
+  border: 1px solid #000000;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease;
+}
+
+.booking-card-cb:hover {
+  transform: scale(1.02);
+}
+
+/* Text Content */
+.booking-card-cb p {
+  font-size: 0.95rem;
+  color: #f5f5f5;
+  margin: 0.4rem 0;
+}
+
+.booking-card-cb p strong {
+  color: #2b2f42;
+}
+
+.status-buttons-cb {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 1rem;
+}
+
+/* Buttons */
+button {
+  padding: 0.6rem 1.2rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.approve-cb {
+  background-color: #28a745;
+  color: #ffffff;
+}
+
+.approve-cb:hover {
+  background-color: #218838;
+  box-shadow: 0px 4px 8px rgba(40, 167, 69, 0.2);
+}
+
+.reject-cb {
+  background-color: #dc3545;
+  color: #ffffff;
+}
+
+.reject-cb:hover {
+  background-color: #c82333;
+  box-shadow: 0px 4px 8px rgba(220, 53, 69, 0.2);
+}

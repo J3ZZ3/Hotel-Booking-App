@@ -1,0 +1,34 @@
+.admin-dashboard-ad {
+    height: 100%;
+    background-image: url('../../assets/admindashboard.jpg');
+    background-size: cover;
+    background-position: center;
+    color: white;
+    text-align: center;
+  }
+  
+  .overlay-ad {
+    display: flexbox;
+    flex-direction: column;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    text-align: center;
+    padding: 2rem;
+    height: 100%;
+  }
+
+  .rooms-ad {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+  }
+
+  .buttons-ad {
+   
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+  }
