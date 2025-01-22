@@ -1,22 +1,30 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase/firebaseConfig";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import withReactContent from 'sweetalert2-react-content';
 import './ClientStyles/ClientLogin.css';
-
+import { useAuth } from '../../context/AuthContext';
 
 const ClientLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
+  const { currentUser } = useAuth();
   const MySwal = withReactContent(Swal);
+
+  useEffect(() => {
+    if (currentUser) {
+      navigate("/client-dashboard");
+    }
+  }, [currentUser, navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true); // Start loading
+
     try {
       await signInWithEmailAndPassword(auth, email, password);
       MySwal.fire({
@@ -24,56 +32,48 @@ const ClientLogin = () => {
         text: "You have successfully logged in.",
         icon: "success",
         confirmButtonText: "OK",
-        customClass: {
-          popup: "custom-popup",
-        }, catch (err) {
-          MySwal.fire({
-            title: 'Login Failed',
-            text: err.message,
-            icon: 'error',
-            confirmButtonText: 'Retry',
-            customClass: {
-              popup: 'custom-popup',
-            }
-          })
-        }
-      })
+      });
       navigate("/client-dashboard");
     } catch (err) {
-      setError(err.message);
+      MySwal.fire({
+        title: 'Login Failed',
+        text: err.message,
+        icon: 'error',
+        confirmButtonText: 'Retry',
+      });
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
   return (
     <div className="login-page">
       <div className="overlay">
-      <h1 className="login-title">Client Login</h1>
-      <form className="login-form" onSubmit={handleLogin}>
-        <input
-        className="login-email"
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-        className="login-password"
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button className="login-button" type="submit">Login</button>
-        {error && <p>{error}</p>}
-      </form>
-      
-      <p>Don't have an account? <a href="/client-register">Register</a></p>
-   
- 
-      <p>Are you an admin by chance?<a href="/admin-login">Login</a></p>
-    </div>
+        <h1 className="login-title">Client Login</h1>
+        <form className="login-form" onSubmit={handleLogin}>
+          <input
+            className="login-email"
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <input
+            className="login-password"
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <button className="login-button" type="submit" disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
+          </button>
+        </form>
+        <p>Don't have an account? <a href="/client-register">Register</a></p>
+        <p>Are you an admin by chance?<a href="/admin-login">Login</a></p>
+      </div>
     </div>
   );
 };

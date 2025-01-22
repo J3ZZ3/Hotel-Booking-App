@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { auth } from "../../firebase/firebaseConfig";
 import { useNavigate } from "react-router-dom";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../../firebase/firebaseConfig";
+import Swal from "sweetalert2";
 import "./AdminStyles/AdminLogin.css";
 
 const AdminLogin = () => {
@@ -14,54 +13,50 @@ const AdminLogin = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      
-      const user = userCredential.user;
-      const docRef = doc(db, "admins", user.uid);
-      const docSnap = await getDoc(docRef);
-      
-      if (docSnap.exists()) {
-        const userData = docSnap.data();
-        if (userData.isAdmin) {
-          navigate("/admin-dashboard");
-        } else {
-          setError("Access denied. You are not an admin.");
-        }
-      } else {
-        setError("Admin not found.");
-      }
-    } catch (err) {
-      setError("Invalid credentials or error. Please try again.");
+      await setPersistence(auth, browserLocalPersistence);
+      await signInWithEmailAndPassword(auth, email, password);
+      Swal.fire({
+        icon: "success",
+        title: "Login Successful",
+        text: "Welcome back!",
+      });
+      navigate("/admin-dashboard");
+    } catch (error) {
+      setError(error.message);
+      Swal.fire({
+        icon: "error",
+        title: "Login Failed",
+        text: error.message,
+      });
+      console.error("Error logging in: ", error);
     }
   };
 
   return (
-   
     <div className="admin-login">
-       <div className="overlay">
-      <h1>Admin Login</h1>
-      <form onSubmit={handleLogin}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit">Login</button>
-        {error && <p>{error}</p>}
-      </form>
-      <p className="register">Don't have an account? <a href="/admin-register">Register</a></p>
-    </div>
+      <div className="overlay">
+        <h1>Admin Login</h1>
+        <form onSubmit={handleLogin}>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <button type="submit">Login</button>
+          {error && <p>{error}</p>}
+        </form>
+        <p className="register">Don't have an account? <a href="/admin-register">Register</a></p>
+      </div>
     </div>
   );
 };

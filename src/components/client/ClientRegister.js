@@ -1,14 +1,22 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../../firebase/firebaseConfig";
 import { collection, addDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from '../../context/AuthContext'; // Import the Auth context
 
 const ClientRegister = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { currentUser } = useAuth(); // Get current user from context
+
+  useEffect(() => {
+    if (currentUser) {
+      navigate("/client-dashboard"); // Redirect if already logged in
+    }
+  }, [currentUser, navigate]);
 
   const handleRegister = async (e) => {
     e.preventDefault();

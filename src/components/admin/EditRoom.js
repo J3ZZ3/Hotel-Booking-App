@@ -3,6 +3,7 @@ import { doc, updateDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../../firebase/firebaseConfig";
 import "./AdminStyles/EditRoom.css";
+import Swal from "sweetalert2";
 
 const EditRoom = ({ room, setIsEditing }) => {
   const [name, setName] = useState(room.name);
@@ -35,9 +36,19 @@ const EditRoom = ({ room, setIsEditing }) => {
 
       setIsEditing(false);
       alert("Room updated successfully.");
+      Swal.fire({
+        icon: "success",
+        title: "Room Updated",
+        text: "Room updated successfully.",
+      });
     } catch (error) {
       console.error("Error updating room: ", error);
       alert("Error updating room.");
+      Swal.fire({
+        icon: "error",
+        title: "Update Failed",
+        text: "Failed to update room. Please try again.",
+      });
     }
   };
 
@@ -51,18 +62,21 @@ const EditRoom = ({ room, setIsEditing }) => {
             placeholder="Room Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            required
             className="edit-room-input"
           />
           <textarea
             placeholder="Room Description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+            required
             className="edit-room-textarea"
           />
           <textarea
             placeholder="Room Amenities"
             value={amenities}
             onChange={(e) => setAmenities(e.target.value)}
+            required
             className="edit-room-textarea"
           />
           <input
@@ -70,11 +84,13 @@ const EditRoom = ({ room, setIsEditing }) => {
             placeholder="Room Price"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
+            required
             className="edit-room-input"
           />
           <select
             value={roomType}
             onChange={(e) => setRoomType(e.target.value)}
+            required
             className="edit-room-select"
           >
             <option value="Single">Single</option>

@@ -9,23 +9,24 @@
     background-position: center;
     color: white;
     text-align: center;
-  }
-  
-  .overlay {
+}
+
+.overlay {
     width: 100%;
     height: auto;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background-color: rgba(0, 0, 0, 0.6); 
-  }
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 30px;
+    border-radius: 10px;
+}
 
 input {
     margin-top: 20px;
-    scale: 1.5;
     width: 50%;
-    padding: 10px;
+    padding: 12px;
     margin-bottom: 15px;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -35,17 +36,18 @@ input {
 button {
     margin-top: 30px;
     width: 30%;
-    padding: 10px;
-    background-color: #007bff;
+    padding: 12px;
+    background-color: #c0392b; /* Elegant red */
     color: white;
     border: none;
     border-radius: 4px;
-    font-size: 200%;
+    font-size: 1.1rem;
     cursor: pointer;
+    transition: background-color 0.3s;
 }
 
 button:hover {
-    background-color: #0056b3;
+    background-color: #a93226; /* Darker red on hover */
 }
 
 form {
@@ -95,3 +97,12 @@ a {
   .custom-popup .swal2-styled.swal2-confirm:hover {
     background-color: #ff3d3d;
   }
+
+@media (max-width: 600px) {
+    input {
+        width: 80%; /* Adjust input width on mobile */
+    }
+    .login-page {
+        padding: 20px; /* Add padding for mobile */
+    }
+}

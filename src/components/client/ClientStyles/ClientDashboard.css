@@ -26,6 +26,9 @@
   .room-list-cd {
     background-color: black;
     color: black;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
   }
 .client-dashboard-cd {
     padding: 20px;
@@ -53,4 +56,13 @@
 
 h1 {
     color: rgb(0, 0, 0);;
+}
+
+@media (max-width: 600px) {
+    .client-dashboard-cd {
+        padding: 10px; /* Reduce padding on small screens */
+    }
+    h1 {
+        font-size: 1.5rem; /* Smaller heading on mobile */
+    }
 }

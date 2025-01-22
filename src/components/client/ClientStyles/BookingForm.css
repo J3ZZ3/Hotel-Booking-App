@@ -1,0 +1,117 @@
+body {
+    margin: 0; /* Remove default margin */
+    height: 100vh; /* Full height */
+    overflow: hidden; /* Prevent scrollbars */
+    background: linear-gradient(135deg, #c0392b, #666); /* Gradient background */
+    animation: backgroundAnimation 10s ease infinite; /* Animation for background */
+}
+
+@keyframes backgroundAnimation {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+h3 {
+    color: #fff; /* White for better contrast */
+    font-family: 'Arial', sans-serif; /* Clean sans-serif font */
+    font-size: 2rem; /* Larger font size for emphasis */
+    margin-bottom: 20px; /* Space below the heading */
+    text-align: center; /* Center the heading */
+}
+
+p {
+    color: #f0f0f0; /* Light grey for text */
+    font-size: 1rem; /* Standard font size */
+    margin-bottom: 15px; /* Space below paragraphs */
+    text-align: center; /* Center the text */
+}
+
+form {
+    display: flex;
+    flex-wrap: wrap; /* Allow wrapping for landscape layout */
+    justify-content: space-between; /* Space out form elements */
+    max-width: 800px; /* Limit the width for better readability */
+    margin: auto; /* Center the form */
+    padding: 20px; /* Padding around the form */
+    background: rgba(255, 255, 255, 0); /* Slightly transparent white background */
+    border-radius: 10px; /* Rounded corners */
+}
+
+.input-container {
+    flex-basis: 70%; /* Allow inputs to take up most of the width */
+}
+
+.button-container {
+    display: flex;
+    flex-direction: column; /* Stack buttons vertically */
+    align-items: flex-end; /* Align buttons to the right */
+    flex-basis: 30%; /* Allow buttons to take up the remaining width */
+}
+
+input {
+    padding: 12px; /* Padding for input fields */
+    border: 1px solid #ccc; /* Light grey border */
+    border-radius: 4px; /* Rounded corners for inputs */
+    margin-bottom: 15px; /* Space between inputs */
+    font-size: 1rem; /* Standard font size */
+    width: 100%; /* Full width for inputs */
+    transition: border-color 0.3s; /* Smooth transition for focus effect */
+}
+
+input:focus {
+    border-color: #c0392b; /* Change border color on focus */
+    outline: none; /* Remove default outline */
+}
+
+button {
+    padding: 12px;
+    background-color: #c0392b; /* Elegant red */
+    color: white;
+    border: none;
+    border-radius: 4px; /* Rounded corners */
+    cursor: pointer;
+    font-size: 1rem; /* Standard font size */
+    transition: background-color 0.3s, transform 0.2s; /* Smooth transition for hover effect */
+    width: 100%; /* Full width for buttons */
+}
+
+button:hover {
+    background-color: #a93226; /* Darker red on hover */
+    transform: translateY(-2px); /* Slight lift effect on hover */
+}
+
+button:active {
+    transform: translateY(0); /* Reset lift effect on click */
+}
+
+.paypal-button-container {
+    margin: 20px 0; /* Space around PayPal button */
+    display: flex;
+    justify-content: center; /* Center PayPal button */
+}
+
+/* Media Queries for Responsiveness */
+@media (max-width: 600px) {
+    h3 {
+        font-size: 1.5rem; /* Smaller heading on mobile */
+    }
+
+    .input-container {
+        flex-direction: column; /* Stack inputs vertically on small screens */
+    }
+
+    input {
+        width: 100%; /* Full width for inputs on mobile */
+    }
+
+    button {
+        width: 100%; /* Full width for buttons on mobile */
+    }
+} 

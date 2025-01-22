@@ -95,3 +95,15 @@
   .card:hover {
     transform: translateY(-10px); /* Move the card up slightly */
   }
+
+  @media (max-width: 768px) {
+    .feature-cards {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .card {
+        width: 90%;
+        margin-bottom: 20px;
+    }
+  }

@@ -1,9 +1,9 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, setPersistence, browserLocalPersistence, browserSessionPersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
-// Firebase configuration
+// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_API_KEY,
   authDomain: process.env.REACT_APP_AUTH_DOMAIN,
@@ -18,5 +18,16 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
+
+// Set persistence
+setPersistence(auth, browserSessionPersistence) // or browserLocalPersistence
+  .then(() => {
+    // Existing and future Auth states are now persisted in the current session only.
+    // ...
+  })
+  .catch((error) => {
+    // Handle Errors here.
+    console.error("Error setting persistence: ", error);
+  });
 
 export { auth, db, storage };

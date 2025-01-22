@@ -1,34 +1,64 @@
 .admin-dashboard-ad {
     height: 100%;
-    background-image: url('../../assets/admindashboard.jpg');
-    background-size: cover;
-    background-position: center;
-    color: white;
+    background-color: #f4f4f400; /* Light grey background for the dashboard */
+    color: #333; /* Dark grey text for contrast */
     text-align: center;
-  }
-  
-  .overlay-ad {
-    display: flexbox;
-    flex-direction: column;
-    align-items: center;
-    background-color: rgba(0, 0, 0, 0.6);
-    color: white;
-    text-align: center;
-    padding: 2rem;
-    height: 100%;
-  }
+}
 
-  .rooms-ad {
+.overlay-ad {
     display: flex;
     flex-direction: column;
     align-items: center;
-    height: 100%;
-  }
+    background-color: rgba(255, 255, 255, 0); /* Slightly transparent white for overlay */
+    color: #333; /* Dark grey text */
+    text-align: center;
+    padding: 2rem;
+    border-radius: 10px; /* Rounded corners for the overlay */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    margin-top: 80px; /* Add margin to push content below the navbar */
+}
 
-  .buttons-ad {
+.rooms-ad {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: auto; /* Allow height to adjust based on content */
+    padding: 1rem; /* Add padding for aesthetics */
+    overflow: hidden; /* Prevent overflow */
+}
+
+h1 {
+    color: #c0392b; /* Red color for the main heading */
+}
+
+h2 {
+    color: #333; /* Dark grey for subheadings */
+}
+
+.buttons-ad {
    
     align-items: center;
     justify-content: center;
     height: 100%;
     width: 100%;
   }
+
+.fab-button {
+  position: fixed;
+  bottom: 20px; /* Distance from the bottom */
+  right: 20px; /* Distance from the right */
+  background-color: #ff4081; /* Color of the button */
+  color: white; /* Text color */
+  border: none; /* No border */
+  border-radius: 50%; /* Circular shape */
+  width: 56px; /* Width of the button */
+  height: 56px; /* Height of the button */
+  font-size: 24px; /* Font size */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow effect */
+  cursor: pointer; /* Pointer cursor on hover */
+  transition: background-color 0.3s; /* Transition effect */
+}
+
+.fab-button:hover {
+  background-color: #e91e63; /* Darker shade on hover */
+}

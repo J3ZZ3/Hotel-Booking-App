@@ -1,11 +1,11 @@
-
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { PayPalButtons } from '@paypal/react-paypal-js';
+import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { db } from '../../firebase/firebaseConfig';
 import { collection, addDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth'; 
 import Swal from 'sweetalert2';
+import './ClientStyles/BookingForm.css';
 
 const BookingForm = () => {
   const location = useLocation();
@@ -19,6 +19,7 @@ const BookingForm = () => {
     checkOutDate: '',
   });
   const [isPaid, setIsPaid] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -38,6 +39,8 @@ const BookingForm = () => {
       });
       return;
     }
+
+    setLoading(true); // Start loading
 
     try {
       const auth = getAuth();
@@ -76,9 +79,15 @@ const BookingForm = () => {
       Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: 'There was a problem submitting your booking. Please try again.',
+        text: 'Failed to submit booking. Please try again.',
       });
+    } finally {
+      setLoading(false); // Stop loading
     }
+  };
+
+  const handlePaymentSuccess = async (details) => {
+    setIsPaid(true);
   };
 
   if (!room) {
@@ -86,109 +95,87 @@ const BookingForm = () => {
   }
 
   return (
-    <div>
+    <>
       <h3>Booking Form for {room.name}</h3>
       <p><strong>Description:</strong> {room.description}</p>
       <p><strong>Price:</strong> ${room.price}</p>
       <p><strong>Status:</strong> {room.isBooked ? 'Booked' : 'Available'}</p>
 
       <form onSubmit={handleSubmit}>
-        <div>
-          <label>
-            Full Name:
-            <input
-              type="text"
-              name="fullName"
-              value={formData.fullName}
-              onChange={handleChange}
-              required
-            />
-          </label>
-        </div>
-        <div>
-          <label>
-            Address:
-            <input
-              type="text"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              required
-            />
-          </label>
-        </div>
-        <div>
-          <label>
-            Contact Number:
-            <input
-              type="tel"
-              name="contactNumber"
-              value={formData.contactNumber}
-              onChange={handleChange}
-              required
-            />
-          </label>
-        </div>
-        <div>
-          <label>
-            Check-In Date:
-            <input
-              type="date"
-              name="checkInDate"
-              value={formData.checkInDate}
-              onChange={handleChange}
-              required
-            />
-          </label>
-        </div>
-        <div>
-          <label>
-            Check-Out Date:
-            <input
-              type="date"
-              name="checkOutDate"
-              value={formData.checkOutDate}
-              onChange={handleChange}
-              required
-            />
-          </label>
-        </div>
-        <div>
-          <PayPalButtons
-            createOrder={(data, actions) => {
-              return actions.order.create({
-                purchase_units: [{
-                  amount: {
-                    value: room.price.toString(), 
-                  },
-                }],
-              });
-            }}
-            onApprove={async (data, actions) => {
-              const details = await actions.order.capture();
-              console.log('Transaction completed by ' + details.payer.name.given_name);
-              setIsPaid(true);
-              Swal.fire({
-                icon: 'success',
-                title: 'Payment Successful',
-                text: 'Payment has been processed successfully.',
-              });
-            }}
-            onError={(err) => {
-              console.error('Payment error:', err);
-              Swal.fire({
-                icon: 'error',
-                title: 'Payment Failed',
-                text: 'There was an issue with the payment. Please try again.',
-              });
-            }}
+        <div className="input-container">
+          <input
+            type="text"
+            name="fullName"
+            value={formData.fullName}
+            onChange={handleChange}
+            placeholder="Full Name"
+            required
+          />
+          <input
+            type="text"
+            name="address"
+            value={formData.address}
+            onChange={handleChange}
+            placeholder="Address"
+            required
+          />
+          <input
+            type="tel"
+            name="contactNumber"
+            value={formData.contactNumber}
+            onChange={handleChange}
+            placeholder="Contact Number"
+            required
+          />
+          <input
+            type="date"
+            name="checkInDate"
+            value={formData.checkInDate}
+            onChange={handleChange}
+            required
+          />
+          <input
+            type="date"
+            name="checkOutDate"
+            value={formData.checkOutDate}
+            onChange={handleChange}
+            required
           />
         </div>
-        <button type="submit" disabled={!isPaid}>
-          Submit and Proceed
-        </button>
+        <div className="button-container">
+          <div className="paypal-button-container">
+            <PayPalScriptProvider options={{ "client-id": "YOUR_CLIENT_ID" }}>
+              <PayPalButtons
+                createOrder={(data, actions) => {
+                  return actions.order.create({
+                    purchase_units: [{
+                      amount: {
+                        value: room.price.toString(), 
+                      },
+                    }],
+                  });
+                }}
+                onApprove={async (data, actions) => {
+                  const details = await actions.order.capture();
+                  handlePaymentSuccess(details);
+                }}
+                onError={(err) => {
+                  console.error('Payment error:', err);
+                  Swal.fire({
+                    icon: 'error',
+                    title: 'Payment Failed',
+                    text: 'There was an issue with the payment. Please try again.',
+                  });
+                }}
+              />
+            </PayPalScriptProvider>
+          </div>
+          <button type="submit" disabled={loading}>
+            {loading ? "Submitting..." : "Submit and Proceed"}
+          </button>
+        </div>
       </form>
-    </div>
+    </>
   );
 };
 

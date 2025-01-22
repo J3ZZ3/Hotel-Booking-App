@@ -18,40 +18,40 @@ const AdminRegister = () => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    if (secretCode !== predefinedSecretCode) {
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Invalid admin code. Please try again.",
+      });
+      return;
+    }
+
     try {
-      if (secretCode !== predefinedSecretCode) {
-        Swal.fire({
-          icon: "error",
-          title: "Oops...",
-          text: "Invalid admin code. Please try again.",
-        });
-      }
-
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      const userDocRef = doc(db, "admins", user.uid);
 
-      await setDoc(userDocRef, {
-        email: email,
-        password: password,
+      await setDoc(doc(db, "admins", user.uid), {
+        uid: user.uid,
+        email: user.email,
         isAdmin: true,
       });
 
-      setSuccess("");
-      setEmail("");
-      setPassword("");
-      setSecretCode("");
-
-      setTimeout(() => {
-        navigate("/admin-login");
-      }, 3000);
+      setSuccess("Admin registered successfully!");
+      Swal.fire({
+        icon: "success",
+        title: "Registration Successful",
+        text: "Admin registered successfully!",
+      });
+      navigate("/admin-dashboard");
     } catch (err) {
       setError(err.message);
+      Swal.fire({
+        icon: "error",
+        title: "Registration Failed",
+        text: err.message,
+      });
+      console.error("Error registering admin: ", err);
     }
   };
 
@@ -64,18 +64,21 @@ const AdminRegister = () => {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          required
         />
         <input
           type="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          required
         />
         <input
           type="password"
           placeholder="Admin Code"
           value={secretCode}
           onChange={(e) => setSecretCode(e.target.value)}
+          required
         />
         <button type="submit">Register</button>
       </form>

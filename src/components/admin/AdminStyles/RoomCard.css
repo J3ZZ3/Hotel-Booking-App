@@ -46,3 +46,53 @@
   .delete-button:hover {
     background-color: darkred;
   }
+
+.room-card {
+    background-color: #ffffff; /* White background for the card */
+    border: 1px solid #e0e0e0; /* Light grey border */
+    border-radius: 10px; /* Rounded corners */
+    padding: 20px; /* Padding inside the card */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    margin: 20px; /* Space between cards */
+    text-align: center; /* Center text */
+}
+
+.room-title {
+    font-size: 1.8rem; /* Title size */
+    color: #c0392b; /* Red color for title */
+    margin-bottom: 10px; /* Space below title */
+}
+
+.room-image {
+    width: 100%; /* Full width */
+    height: auto; /* Maintain aspect ratio */
+    border-radius: 5px; /* Rounded corners for image */
+    margin-bottom: 10px; /* Space below image */
+}
+
+.room-description,
+.room-amenities,
+.room-price,
+.room-status {
+    font-size: 1rem; /* Description size */
+    color: #666; /* Grey color for text */
+    margin: 5px 0; /* Space between text elements */
+}
+
+.book-button {
+    background-color: #c0392b; /* Red background for button */
+    color: #fff; /* White text */
+    padding: 10px 15px; /* Padding for button */
+    border: none; /* No border */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s ease; /* Smooth transition */
+}
+
+.book-button:hover {
+    background-color: #a93226; /* Darker red on hover */
+}
+
+.booked-message {
+    color: #666; /* Grey color for booked message */
+}
