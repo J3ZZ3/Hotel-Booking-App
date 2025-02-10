@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 const ProtectedRoute = ({ children }) => {
     const { currentUser } = useAuth();
 
-    return currentUser ? children : <Navigate to="/admin-login" />;
+    return currentUser ? children : <Navigate to="/" />;
 };
 
 export default ProtectedRoute;
