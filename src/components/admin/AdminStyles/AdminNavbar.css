@@ -1,74 +1,80 @@
 .admin-navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #ffffff;
-    padding: 1em 2em;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    z-index: 1000;
-}
-
-.admin-app {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #c0392b;
-}
-
-.admin-links {
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    padding: 1rem 2rem;
     display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1000;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.admin-link {
-    color: #333;
-    text-decoration: none;
-    margin: 0 1em;
-    padding: 0.5em 1em;
-    border-radius: 5px;
-    transition: background-color 0.3s ease, color 0.3s ease;
+.nav-links {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
 }
 
-.admin-link:hover {
-    background-color: #c0392b;
+.nav-links a, .logout-button {
     color: #ffffff;
-}
-
-.admin-dash {
-    color: white;
     text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-size: 1rem;
 }
 
-.admin-dash:hover {
-    color: black;
+.nav-links a:hover, .logout-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
 }
 
-.client-books {
+.nav-links a.active {
+    background-color: #c0392b;
     color: white;
-    text-decoration: none;
 }
 
-.client-books:hover {
-    color: black;
+.nav-links a ion-icon, .logout-button ion-icon {
+    font-size: 1.3rem;
 }
 
-/* Responsive styles */
+.logout-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #c0392b;
+    font-weight: 500;
+}
+
+.logout-button:hover {
+    color: #e74c3c;
+}
+
 @media (max-width: 768px) {
     .admin-navbar {
-        flex-direction: column;
-        align-items: flex-start;
+        padding: 1rem;
     }
 
-    .admin-links {
-        flex-direction: column;
-        width: 100%;
+    .nav-links {
+        gap: 1rem;
     }
 
-    .admin-link {
-        margin: 0.5em 0;
-        width: 100%;
-        text-align: center;
+    .nav-links a span, .logout-button span {
+        display: none;
+    }
+
+    .nav-links a, .logout-button {
+        padding: 0.5rem;
+    }
+
+    .nav-links a ion-icon, .logout-button ion-icon {
+        font-size: 1.5rem;
     }
 }

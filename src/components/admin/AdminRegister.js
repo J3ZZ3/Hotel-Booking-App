@@ -1,59 +1,67 @@
-import React, { useState, useEffect } from "react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth, db } from "../../firebase/firebaseConfig";
-import { collection, addDoc } from "firebase/firestore";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from '../../context/AuthContext';
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../firebase/firebaseConfig";
+import { setDoc, doc } from "firebase/firestore";
+import { db } from "../../firebase/firebaseConfig";
 import Swal from "sweetalert2";
 import withReactContent from 'sweetalert2-react-content';
-import './ClientStyles/ClientLogin.css';
+import "./AdminStyles/AdminLogin.css";
 
-const ClientRegister = () => {
+const AdminRegister = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [secretCode, setSecretCode] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
   const MySwal = withReactContent(Swal);
 
-  useEffect(() => {
-    if (currentUser) {
-      navigate("/client-dashboard");
-    }
-  }, [currentUser, navigate]);
+  const predefinedSecretCode = "adminSecretCode123";
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);
 
+    if (secretCode !== predefinedSecretCode) {
+      MySwal.fire({
+        title: "Invalid Code",
+        text: "Invalid admin code. Please try again.",
+        icon: "error",
+        confirmButtonText: "Retry",
+        customClass: {
+          popup: 'custom-popup'
+        }
+      });
+      setLoading(false);
+      return;
+    }
+
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      await addDoc(collection(db, "users"), {
+      await setDoc(doc(db, "admins", user.uid), {
         uid: user.uid,
         email: user.email,
-        password: password,
-        role: "client",
-        isAdmin: false
+        isAdmin: true,
       });
 
       MySwal.fire({
         title: "Registration Successful",
-        text: "Your account has been created successfully!",
+        text: "Admin registered successfully!",
         icon: "success",
         confirmButtonText: "OK",
         customClass: {
           popup: 'custom-popup'
         }
       });
-      navigate("/client-login");
+      navigate("/admin-login");
     } catch (err) {
       MySwal.fire({
-        title: 'Registration Failed',
+        title: "Registration Failed",
         text: err.message,
-        icon: 'error',
-        confirmButtonText: 'Retry',
+        icon: "error",
+        confirmButtonText: "Retry",
         customClass: {
           popup: 'custom-popup'
         }
@@ -64,9 +72,9 @@ const ClientRegister = () => {
   };
 
   return (
-    <div className="login-page">
-      <div className="overlay">
-        <h1 className="login-title">Create Account</h1>
+    <div className="admin-login">
+      <div className="overlay-adminlogin">
+        <h1 className="login-title">Register as Admin</h1>
         <form className="login-form" onSubmit={handleRegister}>
           <input
             className="login-email"
@@ -84,14 +92,22 @@ const ClientRegister = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+          <input
+            className="login-password"
+            type="password"
+            placeholder="Admin Code"
+            value={secretCode}
+            onChange={(e) => setSecretCode(e.target.value)}
+            required
+          />
           <button className="login-button" type="submit" disabled={loading}>
             {loading ? "Creating Account..." : "Register"}
           </button>
         </form>
-        <p>Already have an account? <a href="/client-login">Login</a></p>
+        <p>Already have an account? <a href="/admin-login">Login</a></p>
       </div>
     </div>
   );
 };
 
-export default ClientRegister;
+export default AdminRegister;

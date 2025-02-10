@@ -2,15 +2,15 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { db } from '../../firebase/firebaseConfig';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth'; 
 import Swal from 'sweetalert2';
 import './ClientStyles/BookingForm.css';
 
-const BookingForm = () => {
+const BookingForm = ({ room }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { room } = location.state || {};
+  const { room: roomData } = location.state || {};
   const [formData, setFormData] = useState({
     fullName: '',
     address: '',
@@ -29,20 +29,35 @@ const BookingForm = () => {
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleBooking = async (e) => {
     e.preventDefault();
-    if (!isPaid) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Payment Required',
-        text: 'Please complete payment before submitting the booking.',
-      });
-      return;
-    }
-
-    setLoading(true); // Start loading
+    setLoading(true);
 
     try {
+      // Check if bookings are available
+      const roomRef = doc(db, "rooms", roomData.id);
+      const roomDoc = await getDoc(roomRef);
+      const roomData = roomDoc.data();
+      
+      if (roomData.currentBookings >= roomData.maxBookings) {
+        Swal.fire({
+          icon: "error",
+          title: "Room Unavailable",
+          text: "Sorry, this room is fully booked.",
+          confirmButtonColor: '#c0392b',
+          background: '#1a1a1a',
+          color: '#ffffff',
+          customClass: {
+            popup: 'dark-theme-popup',
+            confirmButton: 'dark-theme-button',
+            title: 'dark-theme-title',
+            htmlContainer: 'dark-theme-content'
+          }
+        });
+        return;
+      }
+
+      // Create booking
       const auth = getAuth();
       const user = auth.currentUser;
 
@@ -57,15 +72,22 @@ const BookingForm = () => {
 
       const bookingData = {
         userId: user.uid,
-        roomId: room.id,
-        roomName: room.name,
+        roomId: roomData.id,
+        roomName: roomData.name,
         ...formData,
         status: 'Pending Approval',
         paymentStatus: 'Paid',
         createdAt: new Date(),
       };
 
-      await addDoc(collection(db, 'bookings'), bookingData);
+      const bookingRef = await addDoc(collection(db, "bookings"), bookingData);
+
+      // Update room booking count
+      await updateDoc(roomRef, {
+        currentBookings: roomData.currentBookings + 1,
+        status: roomData.currentBookings + 1 >= roomData.maxBookings ? 
+          "Unavailable" : "Available"
+      });
 
       Swal.fire({
         icon: 'success',
@@ -74,15 +96,15 @@ const BookingForm = () => {
       });
 
       navigate('/client-dashboard');
-    } catch (err) {
-      console.error('Error submitting booking:', err);
+    } catch (error) {
+      console.error('Error submitting booking:', error);
       Swal.fire({
         icon: 'error',
         title: 'Error',
         text: 'Failed to submit booking. Please try again.',
       });
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
   };
 
@@ -90,18 +112,18 @@ const BookingForm = () => {
     setIsPaid(true);
   };
 
-  if (!room) {
+  if (!roomData) {
     return <p>No room data available.</p>;
   }
 
   return (
     <>
-      <h3>Booking Form for {room.name}</h3>
-      <p><strong>Description:</strong> {room.description}</p>
-      <p><strong>Price:</strong> ${room.price}</p>
-      <p><strong>Status:</strong> {room.isBooked ? 'Booked' : 'Available'}</p>
+      <h3>Booking Form for {roomData.name}</h3>
+      <p><strong>Description:</strong> {roomData.description}</p>
+      <p><strong>Price:</strong> ${roomData.price}</p>
+      <p><strong>Status:</strong> {roomData.isBooked ? 'Booked' : 'Available'}</p>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleBooking}>
         <div className="input-container">
           <input
             type="text"
@@ -144,13 +166,13 @@ const BookingForm = () => {
         </div>
         <div className="button-container">
           <div className="paypal-button-container">
-            <PayPalScriptProvider options={{ "client-id": "YOUR_CLIENT_ID" }}>
+            <PayPalScriptProvider options={{ "client-id": process.env.REACT_APP_CLIENT_ID }}>
               <PayPalButtons
                 createOrder={(data, actions) => {
                   return actions.order.create({
                     purchase_units: [{
                       amount: {
-                        value: room.price.toString(), 
+                        value: roomData.price.toString(), 
                       },
                     }],
                   });

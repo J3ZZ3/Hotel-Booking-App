@@ -1,19 +1,49 @@
 import React from "react";
 import "./AdminStyles/AdminNavbar.css";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
-function AdminNavbar() {
+const AdminNavbar = () => {
+    const location = useLocation();
+
+    const isActive = (path) => {
+        return location.pathname === path ? 'active' : '';
+    };
+
     return (
         <nav className="admin-navbar">
             <div className="admin-app">Domicile Hotels</div>
-            <div className="admin-links">
-                <Link to="/admin-dashboard" className="admin-link">Dashboard</Link>
-                <Link to="/add-room" className="admin-link">Add Room</Link>
-                <Link to="/add-admin" className="admin-link">Add Admin</Link>
-                <Link to="/customer-bookings" className="admin-link">Bookings</Link>
+            <div className="nav-links">
+                <Link 
+                    to="/admin-dashboard" 
+                    className={isActive('/admin-dashboard')}
+                >
+                    <ion-icon name="grid-outline"></ion-icon>
+                    <span>Dashboard</span>
+                </Link>
+                <Link 
+                    to="/add-room" 
+                    className={isActive('/add-room')}
+                >
+                    <ion-icon name="add-circle-outline"></ion-icon>
+                    <span>Add Room</span>
+                </Link>
+                <Link 
+                    to="/manage-admins" 
+                    className={isActive('/manage-admins')}
+                >
+                    <ion-icon name="people-outline"></ion-icon>
+                    <span>Manage Admins</span>
+                </Link>
+                <Link 
+                    to="/customer-bookings" 
+                    className={isActive('/customer-bookings')}
+                >
+                    <ion-icon name="calendar-outline"></ion-icon>
+                    <span>Bookings</span>
+                </Link>
             </div>
         </nav>
     );
-}
+};
 
 export default AdminNavbar;
