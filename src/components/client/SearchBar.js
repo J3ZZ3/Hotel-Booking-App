@@ -33,6 +33,7 @@ const SearchBar = ({ rooms, onSearchResults }) => {
 
   return (
     <div className="search-bar">
+      <IoSearch className="search-icon" />
       <input
         type="text"
         placeholder="Search rooms by name, type, price..."

@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, setPersistence, browserLocalPersistence, browserSessionPersistence } from "firebase/auth";
+import { getAuth, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
@@ -20,14 +20,12 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 
 // Set persistence
-setPersistence(auth, browserSessionPersistence) // or browserLocalPersistence
+setPersistence(auth, browserLocalPersistence)
   .then(() => {
-    // Existing and future Auth states are now persisted in the current session only.
-    // ...
+    // Persistence has been set
   })
   .catch((error) => {
-    // Handle Errors here.
-    console.error("Error setting persistence: ", error);
+    console.error('Error setting persistence:', error);
   });
 
 export { auth, db, storage };

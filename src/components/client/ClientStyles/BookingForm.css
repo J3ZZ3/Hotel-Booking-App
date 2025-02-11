@@ -610,7 +610,6 @@ html, body {
     }
 }
 
-/* Add PayPal button container styles */
 .paypal-button-container {
     margin-top: 1.5rem;
     background: rgb(255, 255, 255, 0);
@@ -759,4 +758,22 @@ html, body {
         padding: 0.6rem;
         font-size: 0.8rem;
     }
+}
+
+.paypal-error-notice {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+    border-radius: 4px;
+    color: #856404;
+}
+
+.paypal-error-notice ul {
+    margin-top: 0.5rem;
+    padding-left: 1.5rem;
+}
+
+.paypal-error-notice li {
+    margin: 0.25rem 0;
 }

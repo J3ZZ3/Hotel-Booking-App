@@ -1,6 +1,9 @@
 .search-bar {
     width: 100%;
     margin: 0 auto;
+    position: relative;
+    display: flex;
+    align-items: center;
 }
 
 .search-bar input {
@@ -12,6 +15,7 @@
     background: white;
     transition: all 0.3s ease;
     text-align: center;
+    padding-left: 35px;
 }
 
 .search-bar input:focus {
@@ -22,6 +26,13 @@
 
 .search-bar input::placeholder {
     color: #999;
+}
+
+.search-icon {
+    position: absolute;
+    left: 10px;
+    color: #666;
+    font-size: 1.2rem;
 }
 
 @media (max-width: 768px) {

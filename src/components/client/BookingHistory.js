@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { db } from "../../firebase/firebaseConfig";
-import { collection, getDocs, query, where, addDoc } from "firebase/firestore"; // Import addDoc
-import { getAuth } from "firebase/auth"; // For getting logged-in user
+import { collection, getDocs, query, where, addDoc, doc, updateDoc } from "firebase/firestore"; // Import addDoc, doc, and updateDoc
 import Swal from "sweetalert2";
 import "./ClientStyles/BookingHistory.css";
 import { Navigate } from "react-router-dom";
@@ -80,11 +79,34 @@ const BookingHistory = () => {
     }
 
     try {
+      // Save the rating
       await addDoc(collection(db, "ratings"), {
         userId: currentUser.uid,
         roomId: roomId,
+        bookingId: bookingId,
         rating: userRating,
         timestamp: new Date(),
+      });
+
+      // Update the room's average rating
+      const ratingsQuery = query(collection(db, "ratings"), where("roomId", "==", roomId));
+      const ratingsSnapshot = await getDocs(ratingsQuery);
+      
+      let totalRating = 0;
+      let numberOfRatings = 0;
+      
+      ratingsSnapshot.forEach((doc) => {
+        totalRating += doc.data().rating;
+        numberOfRatings++;
+      });
+
+      const averageRating = totalRating / numberOfRatings;
+
+      // Update room document with new average rating
+      const roomRef = doc(db, "rooms", roomId);
+      await updateDoc(roomRef, {
+        averageRating: averageRating,
+        numberOfRatings: numberOfRatings
       });
 
       Swal.fire({

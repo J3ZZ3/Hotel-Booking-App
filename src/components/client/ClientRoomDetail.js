@@ -7,6 +7,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from './ClientNavbar';
 import { db } from '../../firebase/firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
+import { FaStar, FaStarHalf, FaRegStar } from 'react-icons/fa';
 
 const amenityIcons = {
     'Wi-Fi': <IoWifi />,
@@ -19,8 +20,6 @@ const amenityIcons = {
     'Balcony': <MdBalcony />,
     'Kitchen': <MdKitchen />
 };
-
-const defaultImage = 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2074&q=80';
 
 const ClientRoomDetail = () => {
     const [room, setRoom] = useState(null);
@@ -42,9 +41,7 @@ const ClientRoomDetail = () => {
                         roomData.maxBookings = 5; // Default max bookings
                     }
                     setRoom({ id: roomDoc.id, ...roomData });
-                    if (roomData.imageUrl) {
-                        roomData.imageUrl = roomData.imageUrl;
-                    }
+                    roomData.imageUrl = roomData.imageUrl || '/path/to/default-image.jpg';
                 } else {
                     console.log('No such room!');
                     navigate('/client-dashboard');
@@ -88,11 +85,51 @@ const ClientRoomDetail = () => {
         navigate(-1);
     };
 
+    const RatingStars = ({ rating, numberOfRatings }) => {
+        if (!rating || !numberOfRatings) {
+            return (
+                <div className="rating-overlay">
+                    <div className="rating-display">
+                        <span className="rating-text">No ratings yet</span>
+                    </div>
+                </div>
+            );
+        }
+
+        const stars = [];
+        const fullStars = Math.floor(rating);
+        const hasHalfStar = rating % 1 >= 0.5;
+
+        for (let i = 1; i <= 5; i++) {
+            if (i <= fullStars) {
+                stars.push(<FaStar key={i} className="star-filled" />);
+            } else if (i === fullStars + 1 && hasHalfStar) {
+                stars.push(<FaStarHalf key={i} className="star-half" />);
+            } else {
+                stars.push(<FaRegStar key={i} className="star-empty" />);
+            }
+        }
+
+        return (
+            <div className="rating-display">
+                <div className="stars">{stars}</div>
+                <span className="rating-text">
+                    {rating.toFixed(1)} ({numberOfRatings} {numberOfRatings === 1 ? 'review' : 'reviews'})
+                </span>
+            </div>
+        );
+    };
+
     return (
         <div className="room-detail-page">
             <Navbar />
             <div className="room-image-hero">
-                <img src={room.imageUrl} alt={room.name} className="room-main-image" />
+                <div className="room-image-container">
+                    <img src={room.imageUrl} alt={room.name} className="room-main-image" />
+                    <div className="rating-overlay">
+                        <RatingStars rating={room.averageRating} numberOfRatings={room.numberOfRatings} />
+                    </div>
+                </div>
                 <div className="hero-overlay">
                     <div className="hero-content">
                         <button className="back-button" onClick={handleBack}>

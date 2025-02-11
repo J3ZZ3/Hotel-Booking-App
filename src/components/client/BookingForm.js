@@ -39,6 +39,7 @@ const BookingForm = () => {
   });
   const [isFormValid, setIsFormValid] = useState(false);
   const [currentBookings, setCurrentBookings] = useState([]);
+  const [paypalError, setPaypalError] = useState(false);
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -112,21 +113,40 @@ const BookingForm = () => {
 
   const handlePaymentSuccess = async (data, actions) => {
     try {
-      if (!validateDates(formData.checkInDate, formData.checkOutDate)) return;
+      if (!validateForm(true)) return;
 
-      await actions.order.capture();
+      // First capture the payment
+      const captureResult = await actions.order.capture();
+      
+      if (captureResult.status !== 'COMPLETED') {
+        throw new Error('Payment was not completed successfully');
+      }
+
       const user = getAuth().currentUser;
-      if (!user) throw new Error('User not authenticated');
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
 
+      // Check room availability again before proceeding
       const roomRef = doc(db, "rooms", roomData.id);
-      const roomDoc = await getDoc(roomRef);
-      const currentRoomData = roomDoc.data();
+      const roomSnap = await getDoc(roomRef);
+      
+      if (!roomSnap.exists()) {
+        throw new Error('Room no longer exists');
+      }
 
+      const currentRoomData = roomSnap.data();
       if (currentRoomData.currentBookings >= currentRoomData.maxBookings) {
         throw new Error('Room is no longer available');
       }
 
-      await addDoc(collection(db, "bookings"), {
+      // Check for date conflicts one more time
+      if (!validateDates(formData.checkInDate, formData.checkOutDate)) {
+        throw new Error('Selected dates are no longer available');
+      }
+
+      // Create the booking
+      const bookingRef = await addDoc(collection(db, "bookings"), {
         userId: user.uid,
         roomId: roomData.id,
         roomName: roomData.name,
@@ -135,28 +155,39 @@ const BookingForm = () => {
         totalAmount: calculateNights() * roomData.price,
         status: 'Pending Approval',
         paymentStatus: 'Paid',
-        createdAt: new Date()
+        paymentId: captureResult.id,
+        createdAt: new Date(),
+        updatedAt: new Date()
       });
 
+      // Update room availability
       await updateDoc(roomRef, {
         currentBookings: (currentRoomData.currentBookings || 0) + 1,
         status: (currentRoomData.currentBookings + 1) >= currentRoomData.maxBookings ? 
-          "Unavailable" : "Available"
+          "Unavailable" : "Available",
+        lastUpdated: new Date()
       });
 
-      Swal.fire({
+      // Show success message
+      await Swal.fire({
         icon: 'success',
-        title: 'Booking Successful',
-        text: 'Your booking has been confirmed and payment processed successfully.'
+        title: 'Booking Successful!',
+        text: 'Your booking has been confirmed and payment processed successfully.',
+        confirmButtonText: 'View Booking History'
       });
 
+      // Navigate to booking history
       navigate('/booking-history');
+
     } catch (error) {
-      console.error('Error:', error);
-      Swal.fire({
+      console.error('Booking Error:', error);
+      
+      // Show error message
+      await Swal.fire({
         icon: 'error',
-        title: 'Error',
-        text: error.message || 'An error occurred during booking.'
+        title: 'Booking Failed',
+        text: error.message || 'There was an error processing your booking. Please try again.',
+        confirmButtonText: 'OK'
       });
     }
   };
@@ -169,6 +200,52 @@ const BookingForm = () => {
   if (!roomData) return <div className="booking-error">No room data available.</div>;
 
   const totalPrice = calculateNights() * (roomData?.price || 0);
+
+  // Update the PayPal buttons configuration
+  const paypalButtonConfig = {
+    style: { 
+      layout: "vertical",
+      color: "gold",
+      shape: "rect",
+      label: "pay"
+    },
+    createOrder: (data, actions) => {
+      if (!validateForm(true)) {
+        return Promise.reject(new Error('Please fill all required fields'));
+      }
+      
+      return actions.order.create({
+        purchase_units: [{
+          amount: {
+            currency_code: "USD",
+            value: totalPrice.toString()
+          },
+          description: `Booking for ${roomData.name}`
+        }],
+        application_context: {
+          shipping_preference: 'NO_SHIPPING'
+        }
+      });
+    },
+    onApprove: handlePaymentSuccess,
+    onError: (err) => {
+      console.error('PayPal Error:', err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Payment Failed',
+        text: 'There was an issue processing your payment. Please try again.',
+        confirmButtonText: 'OK'
+      });
+    },
+    onCancel: () => {
+      Swal.fire({
+        icon: 'info',
+        title: 'Payment Cancelled',
+        text: 'You have cancelled the payment process.',
+        confirmButtonText: 'OK'
+      });
+    }
+  };
 
   return (
     <div className="booking-layout">
@@ -269,27 +346,15 @@ const BookingForm = () => {
               {!isFormValid ? (
                 <div className="form-warning">Please fill in all required fields to proceed with payment.</div>
               ) : (
-                <PayPalScriptProvider options={{ "client-id": process.env.REACT_APP_PAYPAL_CLIENT_ID, currency: "USD", intent: "capture" }}>
-                  <PayPalButtons
-                    style={{ layout: "vertical", color: "gold", shape: "rect", label: "pay" }}
-                    createOrder={(data, actions) => {
-                      if (!validateForm(true)) return;
-                      return actions.order.create({
-                        purchase_units: [{
-                          amount: { currency_code: "USD", value: totalPrice.toString() }
-                        }]
-                      });
-                    }}
-                    onApprove={handlePaymentSuccess}
-                    onError={(err) => {
-                      console.error('Payment error:', err);
-                      Swal.fire({
-                        icon: 'error',
-                        title: 'Payment Failed',
-                        text: 'There was an issue with the payment. Please try again.'
-                      });
-                    }}
-                  />
+                <PayPalScriptProvider 
+                  options={{
+                    "client-id": process.env.REACT_APP_PAYPAL_CLIENT_ID,
+                    currency: "USD",
+                    intent: "capture",
+                    "disable-funding": "credit,card"
+                  }}
+                >
+                  <PayPalButtons {...paypalButtonConfig} />
                 </PayPalScriptProvider>
               )}
             </div>
@@ -308,6 +373,17 @@ const BookingForm = () => {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {paypalError && (
+              <div className="paypal-error-notice">
+                <p>Having trouble with PayPal? Try:</p>
+                <ul>
+                  <li>Temporarily disabling your ad blocker</li>
+                  <li>Using a different browser</li>
+                  <li>Checking your internet connection</li>
+                </ul>
               </div>
             )}
           </div>
