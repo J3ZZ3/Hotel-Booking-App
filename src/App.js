@@ -17,6 +17,8 @@ import AddRoom from "./components/admin/AddRoom";  // Add this import
 import ManageAdmins from "./components/admin/ManageAdmins";
 import EditAdmin from "./components/admin/EditAdmin";
 import CustomerBookings from "./components/admin/CustomerBookings";
+import ClientRoomDetail from "./components/client/ClientRoomDetail"; // Add this import
+import BookingForm from "./components/client/BookingForm"; // Add this import
 
 const App = () => {
   return (
@@ -109,6 +111,22 @@ const App = () => {
                 <CustomerBookings />
               </ProtectedRoute>
             }
+          />
+          <Route
+            path="/room/:roomId"
+            element={
+              <ProtectedRoute>
+                <ClientRoomDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route 
+            path="/booking/:roomId" 
+            element={
+                <ProtectedRoute>
+                    <BookingForm />
+                </ProtectedRoute>
+            } 
           />
         </Routes>
       </Router>

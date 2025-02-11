@@ -345,5 +345,5 @@
   transition: all 0.3s ease;
   display: block;
   width: fit-content;
-  margin: 2rem auto 0;  /* Center the button */
+  margin: 2rem auto 0;  
 }
