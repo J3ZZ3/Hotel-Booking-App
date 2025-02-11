@@ -1,312 +1,255 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { db } from '../../firebase/firebaseConfig';
-import { collection, addDoc, doc, getDoc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, getDoc, updateDoc, getDocs, query, where } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
-import { IoCalendar, IoPersonCircle, IoHome, IoCall, IoArrowBack } from 'react-icons/io5';
+import { IoCalendar, IoPersonCircle, IoHome, IoCall, IoArrowBack, IoPeople, IoBed, IoExpand, IoEye } from 'react-icons/io5';
 import Swal from 'sweetalert2';
 import './ClientStyles/BookingForm.css';
+
+const FormInput = ({ icon: Icon, ...props }) => (
+  <div className="input-with-icon">
+    <Icon />
+    <input {...props} />
+  </div>
+);
+
+const SummaryItem = ({ label, value }) => (
+  <div className="summary-item">
+    <span>{label}</span>
+    <span>{value}</span>
+  </div>
+);
+
+const RoomInfo = ({ icon: Icon, label, value }) => value && (
+  <div className="info-item">
+    <Icon className="info-icon" />
+    <span>{label}: {value}</span>
+  </div>
+);
 
 const BookingForm = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { room: roomData, imageUrl } = location.state || {};
+  const { room: roomData } = location.state || {};
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    address: '',
-    contactNumber: '',
-    checkInDate: '',
-    checkOutDate: '',
-    specialRequests: ''
+    fullName: '', email: '', address: '', contactNumber: '',
+    checkInDate: '', checkOutDate: '', specialRequests: ''
   });
-  const [isPaid, setIsPaid] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
+  const [currentBookings, setCurrentBookings] = useState([]);
 
-  // Enhanced validation function
-  const validateForm = () => {
-    const isValid = 
-      formData.fullName.trim() !== '' &&
-      formData.email.trim() !== '' &&
-      formData.address.trim() !== '' &&
-      formData.contactNumber.trim() !== '' &&
-      formData.checkInDate !== '' &&
-      formData.checkOutDate !== '';
-    
+  useEffect(() => {
+    const fetchBookings = async () => {
+      if (!roomData?.id) return;
+      try {
+        const querySnapshot = await getDocs(query(
+          collection(db, "bookings"),
+          where("roomId", "==", roomData.id),
+          where("status", "in", ["Pending Approval", "Approved"])
+        ));
+        setCurrentBookings(querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })).sort((a, b) => new Date(a.checkInDate) - new Date(b.checkInDate)));
+      } catch (error) {
+        console.error("Error fetching bookings:", error);
+      }
+    };
+    fetchBookings();
+  }, [roomData?.id]);
+
+  const validateDates = (checkIn, checkOut, showAlert = true) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+
+    if ((checkInDate < today || checkOutDate <= checkInDate) && showAlert) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Invalid Date Range',
+        text: checkInDate < today ? 'Check-in date cannot be in the past' : 'Check-out date must be after check-in date'
+      });
+      return false;
+    }
+
+    const hasOverlap = currentBookings.some(booking => 
+      checkInDate <= new Date(booking.checkOutDate) && 
+      new Date(booking.checkInDate) <= checkOutDate
+    );
+
+    if (hasOverlap && showAlert) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Date Unavailable',
+        text: 'Selected dates overlap with an existing booking'
+      });
+    }
+
+    return !hasOverlap;
+  };
+
+  const handleChange = ({ target: { name, value } }) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (name.includes('Date')) {
+      const checkInDate = name === 'checkInDate' ? value : formData.checkInDate;
+      const checkOutDate = name === 'checkOutDate' ? value : formData.checkOutDate;
+      if (checkInDate && checkOutDate) {
+        validateDates(checkInDate, checkOutDate, name === 'checkOutDate');
+      }
+    }
+    setTimeout(() => validateForm(false), 0);
+  };
+
+  const validateForm = (showAlert = false) => {
+    const isValid = Object.values(formData).every(val => val.trim() !== '') &&
+      validateDates(formData.checkInDate, formData.checkOutDate, showAlert);
     setIsFormValid(isValid);
     return isValid;
   };
 
-  // Update handleChange to validate form immediately
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prevData => ({
-      ...prevData,
-      [name]: value,
-    }));
-    // Validate form immediately after state update
-    setTimeout(validateForm, 0);
-  };
-
-  // Add blur handler for additional validation
-  const handleBlur = () => {
-    validateForm();
-  };
-
-  const handleBooking = async () => {
-    setLoading(true);
-
+  const handlePaymentSuccess = async (data, actions) => {
     try {
-      // Check if bookings are available
+      if (!validateDates(formData.checkInDate, formData.checkOutDate)) return;
+
+      await actions.order.capture();
+      const user = getAuth().currentUser;
+      if (!user) throw new Error('User not authenticated');
+
       const roomRef = doc(db, "rooms", roomData.id);
       const roomDoc = await getDoc(roomRef);
       const currentRoomData = roomDoc.data();
-      
+
       if (currentRoomData.currentBookings >= currentRoomData.maxBookings) {
-        Swal.fire({
-          icon: "error",
-          title: "Room Unavailable",
-          text: "Sorry, this room is fully booked.",
-        });
-        return;
+        throw new Error('Room is no longer available');
       }
 
-      const auth = getAuth();
-      const user = auth.currentUser;
-
-      if (!user) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Authentication Error',
-          text: 'You need to be logged in to book a room.',
-        });
-        return;
-      }
-
-      const bookingData = {
+      await addDoc(collection(db, "bookings"), {
         userId: user.uid,
         roomId: roomData.id,
         roomName: roomData.name,
+        roomImage: roomData.imageUrl,
         ...formData,
+        totalAmount: calculateNights() * roomData.price,
         status: 'Pending Approval',
         paymentStatus: 'Paid',
-        createdAt: new Date(),
-      };
-
-      const bookingRef = await addDoc(collection(db, "bookings"), bookingData);
+        createdAt: new Date()
+      });
 
       await updateDoc(roomRef, {
-        currentBookings: currentRoomData.currentBookings + 1,
-        status: currentRoomData.currentBookings + 1 >= currentRoomData.maxBookings ? 
+        currentBookings: (currentRoomData.currentBookings || 0) + 1,
+        status: (currentRoomData.currentBookings + 1) >= currentRoomData.maxBookings ? 
           "Unavailable" : "Available"
       });
 
       Swal.fire({
         icon: 'success',
-        title: 'Booking Submitted',
-        text: 'Your booking has been submitted successfully and is awaiting approval.',
+        title: 'Booking Successful',
+        text: 'Your booking has been confirmed and payment processed successfully.'
       });
 
-      navigate('/client-dashboard');
+      navigate('/booking-history');
     } catch (error) {
-      console.error('Error submitting booking:', error);
-      throw error; // Rethrow to be caught by handlePaymentSuccess
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handlePaymentSuccess = async (details) => {
-    setIsPaid(true);
-    try {
-      await handleBooking();
-    } catch (error) {
-      console.error('Error processing booking:', error);
+      console.error('Error:', error);
       Swal.fire({
         icon: 'error',
-        title: 'Booking Failed',
-        text: 'There was an issue processing your booking. Please try again.',
+        title: 'Error',
+        text: error.message || 'An error occurred during booking.'
       });
     }
   };
 
-  if (!roomData) {
-    return <div className="booking-error">No room data available.</div>;
-  }
-
   const calculateNights = () => {
-    if (formData.checkInDate && formData.checkOutDate) {
-      const checkIn = new Date(formData.checkInDate);
-      const checkOut = new Date(formData.checkOutDate);
-      const diffTime = Math.abs(checkOut - checkIn);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays;
-    }
-    return 0;
+    if (!formData.checkInDate || !formData.checkOutDate) return 0;
+    return Math.ceil(Math.abs(new Date(formData.checkOutDate) - new Date(formData.checkInDate)) / (1000 * 60 * 60 * 24));
   };
 
-  const totalPrice = calculateNights() * roomData.price;
+  if (!roomData) return <div className="booking-error">No room data available.</div>;
 
-  // Add PayPal configuration options
-  const paypalOptions = {
-    "client-id": process.env.REACT_APP_PAYPAL_CLIENT_ID,
-    currency: "USD",
-    intent: "capture"
-  };
+  const totalPrice = calculateNights() * (roomData?.price || 0);
 
   return (
     <div className="booking-layout">
       <div className="booking-page">
-          <button className="back-button" onClick={() => navigate(-1)}>
-            <IoArrowBack /> Back to Room Details
-          </button>
-        {/* Booking Summary On The Left Side */}
+        <button className="back-button" onClick={() => navigate(-1)}>
+          <IoArrowBack /> Back to Room Details
+        </button>
+        
         <div className="booking-container">
           <div className="booking-grid">
             <div className="room-summary">
-              <div className="room-image">
-                <img src={imageUrl} alt={roomData.name} />
-              </div>
+              <img src={roomData.imageUrl} alt={roomData.name} className="room-image" />
               <div className="summary-content">
                 <h2>Booking Summary</h2>
-                <div className="summary-details">
-                  <h3>{roomData.name}</h3>
-                  <p className="room-type">{roomData.type} Room</p>
-                  <div className="summary-item">
-                    <span>Price per night</span>
-                    <span>${roomData.price}</span>
+                <h3>{roomData.name}</h3>
+                <p className="room-type">{roomData.type} Room</p>
+                <SummaryItem label="Price per night" value={`$${roomData.price}`} />
+                <SummaryItem label="Number of nights" value={calculateNights()} />
+                <SummaryItem label="Total Price" value={`$${totalPrice}`} />
+
+                <div className="room-additional-info">
+                  <h4>Room Details</h4>
+                  <div className="info-grid">
+                    <RoomInfo icon={IoPeople} label="Capacity" value={`${roomData.capacity} persons`} />
+                    <RoomInfo icon={IoBed} label="Bed" value={roomData.bedType} />
+                    <RoomInfo icon={IoEye} label="View" value={roomData.view} />
+                    <RoomInfo icon={IoHome} label="Floor" value={roomData.floor} />
                   </div>
-                  <div className="summary-item">
-                    <span>Number of nights</span>
-                    <span>{calculateNights()}</span>
-                  </div>
-                  <div className="summary-item total">
-                    <span>Total Price</span>
-                    <span>${totalPrice}</span>
-                  </div>
-                  <div className="room-features">
-                    <h4>Room Features</h4>
-                    <ul>
-                      {roomData.amenities?.map((amenity, index) => (
-                        <li key={index}>{amenity}</li>
-                      ))}
-                    </ul>
-                  </div>
+
+                  {roomData.policies && (
+                    <div className="room-policies">
+                      <h4>Room Policies</h4>
+                      <ul>
+                        {roomData.policies.map((policy, index) => (
+                          <li key={index}>{policy}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* Booking Form In The Middle */}
             <div className="booking-form-container">
               <h2>Guest Information</h2>
-              <form onSubmit={handleBooking}>
+              <form>
                 <div className="form-group">
                   <label>Full Name</label>
-                  <div className="input-with-icon">
-                    <IoPersonCircle />
-                    <input
-                      type="text"
-                      name="fullName"
-                      value={formData.fullName}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      placeholder="Enter your full name"
-                      required
-                    />
-                  </div>
+                  <FormInput icon={IoPersonCircle} type="text" name="fullName" value={formData.fullName} onChange={handleChange} placeholder="Enter your full name" required />
                 </div>
 
                 <div className="form-group">
                   <label>Email</label>
-                  <div className="input-with-icon">
-                    <IoHome />
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      placeholder="Enter your email"
-                      required
-                    />
-                  </div>
+                  <FormInput icon={IoHome} type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Enter your email" required />
                 </div>
 
                 <div className="form-group">
                   <label>Address</label>
-                  <div className="input-with-icon">
-                    <IoHome />
-                    <input
-                      type="text"
-                      name="address"
-                      value={formData.address}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      placeholder="Enter your address"
-                      required
-                    />
-                  </div>
+                  <FormInput icon={IoHome} type="text" name="address" value={formData.address} onChange={handleChange} placeholder="Enter your address" required />
                 </div>
 
                 <div className="form-group">
                   <label>Contact Number</label>
-                  <div className="input-with-icon">
-                    <IoCall />
-                    <input
-                      type="tel"
-                      name="contactNumber"
-                      value={formData.contactNumber}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      placeholder="Enter your contact number"
-                      required
-                    />
-                  </div>
+                  <FormInput icon={IoCall} type="tel" name="contactNumber" value={formData.contactNumber} onChange={handleChange} placeholder="Enter your contact number" required />
                 </div>
 
                 <div className="dates-group">
                   <div className="form-group">
                     <label>Check-in Date</label>
-                    <div className="input-with-icon">
-                      <IoCalendar />
-                      <input
-                        type="date"
-                        name="checkInDate"
-                        value={formData.checkInDate}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        required
-                      />
-                    </div>
+                    <FormInput icon={IoCalendar} type="date" name="checkInDate" value={formData.checkInDate} onChange={handleChange} min={new Date().toISOString().split('T')[0]} required />
                   </div>
 
                   <div className="form-group">
                     <label>Check-out Date</label>
-                    <div className="input-with-icon">
-                      <IoCalendar />
-                      <input
-                        type="date"
-                        name="checkOutDate"
-                        value={formData.checkOutDate}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        required
-                      />
-                    </div>
+                    <FormInput icon={IoCalendar} type="date" name="checkOutDate" value={formData.checkOutDate} onChange={handleChange} min={formData.checkInDate || new Date().toISOString().split('T')[0]} required />
                   </div>
                 </div>
 
                 <div className="form-group">
                   <label>Special Requests</label>
-                  <textarea
-                    name="specialRequests"
-                    value={formData.specialRequests}
-                    onChange={handleChange}
-                    placeholder="Any special requests or preferences?"
-                    rows="4"
-                  />
+                  <textarea name="specialRequests" value={formData.specialRequests} onChange={handleChange} placeholder="Any special requests or preferences?" rows="4" />
                 </div>
               </form>
             </div>
@@ -314,56 +257,26 @@ const BookingForm = () => {
         </div>
       </div>
 
-      {/* Payment Details On The Right Side */}
       <div className="payment-sidebar">
         <div className="payment-summary">
           <h3>Booking Summary</h3>
-          <div className="summary-items">
-            <div className="summary-item">
-              <span>Room Rate</span>
-              <span>${roomData.price} / night</span>
-            </div>
-            <div className="summary-item">
-              <span>Number of Nights</span>
-              <span>{calculateNights()}</span>
-            </div>
-            <div className="summary-item total">
-              <span>Total Amount</span>
-              <span>${totalPrice}</span>
-            </div>
-          </div>
+          <SummaryItem label="Room Rate" value={`$${roomData.price} / night`} />
+          <SummaryItem label="Number of Nights" value={calculateNights()} />
+          <SummaryItem label="Total Amount" value={`$${totalPrice}`} />
           
           <div className="payment-section">
             <div className="paypal-button-container">
               {!isFormValid ? (
-                <div className="form-warning">
-                  Please fill in all required fields before proceeding with payment.
-                </div>
+                <div className="form-warning">Please fill in all required fields to proceed with payment.</div>
               ) : (
-                <PayPalScriptProvider options={paypalOptions}>
+                <PayPalScriptProvider options={{ "client-id": process.env.REACT_APP_PAYPAL_CLIENT_ID, currency: "USD", intent: "capture" }}>
                   <PayPalButtons
-                    style={{
-                      layout: "vertical",
-                      color: "gold",
-                      shape: "rect",
-                      label: "pay"
-                    }}
+                    style={{ layout: "vertical", color: "gold", shape: "rect", label: "pay" }}
                     createOrder={(data, actions) => {
-                      // Double-check validation before creating order
-                      if (!validateForm()) {
-                        Swal.fire({
-                          icon: 'error',
-                          title: 'Form Incomplete',
-                          text: 'Please fill in all required fields before proceeding with payment.',
-                        });
-                        return;
-                      }
+                      if (!validateForm(true)) return;
                       return actions.order.create({
                         purchase_units: [{
-                          amount: {
-                            currency_code: "USD",
-                            value: totalPrice.toString()
-                          }
+                          amount: { currency_code: "USD", value: totalPrice.toString() }
                         }]
                       });
                     }}
@@ -373,13 +286,30 @@ const BookingForm = () => {
                       Swal.fire({
                         icon: 'error',
                         title: 'Payment Failed',
-                        text: 'There was an issue with the payment. Please try again.',
+                        text: 'There was an issue with the payment. Please try again.'
                       });
                     }}
                   />
                 </PayPalScriptProvider>
               )}
             </div>
+            
+            {currentBookings.length > 0 && (
+              <div className="current-bookings-section">
+                <h3>Current Bookings for this Room:</h3>
+                <div className="bookings-list">
+                  {currentBookings.map(booking => (
+                    <div key={booking.id} className="booking-date-item">
+                      <IoCalendar className="calendar-icon" />
+                      <span>
+                        {new Date(booking.checkInDate).toLocaleDateString()} - {new Date(booking.checkOutDate).toLocaleDateString()}
+                      </span>
+                      <span className="booking-status">{booking.status}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

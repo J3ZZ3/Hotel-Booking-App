@@ -7,10 +7,13 @@ import "./ClientStyles/BookingHistory.css";
 import { Navigate } from "react-router-dom";
 import Navbar from './ClientNavbar';
 import { useAuth } from '../../context/AuthContext'; // Import the Auth context
+import BookingCard from './BookingCard';
+import './ClientStyles/BookingCard.css';
 
 const BookingHistory = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('all');
   const [rating, setRating] = useState({});
   const { currentUser } = useAuth(); // Get current user from context
 
@@ -39,6 +42,9 @@ const BookingHistory = () => {
           ...doc.data(),
         }));
 
+        // Sort bookings by date (most recent first)
+        userBookings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        
         setBookings(userBookings);
         setLoading(false);
       } catch (error) {
@@ -52,7 +58,7 @@ const BookingHistory = () => {
     };
 
     fetchBookings();
-  }, [currentUser, Navigate]);
+  }, [currentUser]);
 
   const handleRatingClick = (bookingId, rate) => {
     setRating((prevRating) => ({
@@ -96,49 +102,136 @@ const BookingHistory = () => {
     }
   };
 
+  const filterBookings = () => {
+    if (activeTab === 'all') return bookings;
+    return bookings.filter(booking => booking.status.toLowerCase() === activeTab);
+  };
+
+  const getTabCount = (status) => {
+    if (status === 'all') return bookings.length;
+    return bookings.filter(booking => booking.status.toLowerCase() === status).length;
+  };
+
+  // Group bookings by month and year
+  const groupBookingsByDate = (bookings) => {
+    const groups = {};
+    
+    bookings.forEach(booking => {
+      const date = new Date(booking.createdAt);
+      const monthYear = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+      
+      if (!groups[monthYear]) {
+        groups[monthYear] = [];
+      }
+      groups[monthYear].push(booking);
+    });
+
+    return groups;
+  };
+
+  const refreshBookings = async () => {
+    setLoading(true);
+    try {
+      const q = query(
+        collection(db, "bookings"),
+        where("userId", "==", currentUser.uid)
+      );
+      const querySnapshot = await getDocs(q);
+
+      const userBookings = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      userBookings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      setBookings(userBookings);
+    } catch (error) {
+      console.error("Error refreshing bookings: ", error);
+    }
+    setLoading(false);
+  };
+
   if (loading) {
-    return <p>Loading booking history...</p>;
+    return (
+      <div className="booking-history-container">
+        <Navbar />
+        <div className="booking-history-content">
+          <div className="loading-spinner">Loading booking history...</div>
+        </div>
+      </div>
+    );
   }
 
   if (bookings.length === 0) {
-    return <p>You have no bookings in your history.</p>;
+    return (
+      <div className="booking-history-container">
+        <Navbar />
+        <div className="booking-history-content">
+          <div className="no-bookings-message">
+            You have no bookings in your history.
+          </div>
+        </div>
+      </div>
+    );
   }
+
+  const groupedBookings = groupBookingsByDate(filterBookings());
 
   return (
     <div className="booking-history-container">
       <Navbar />
       <div className="booking-history-content">
         <h2>Your Booking History</h2>
-        <ul>
-          {bookings.map((booking) => (
-            <li key={booking.id} className="booking-item">
-              <div className="booking-info">
-                <h3>Booking ID: {booking.id}</h3>
-                <p><strong>Room Name:</strong> {booking.roomName}</p>
-                <p><strong>Check-In Date:</strong> {new Date(booking.checkInDate).toLocaleDateString()}</p>
-                <p><strong>Check-Out Date:</strong> {new Date(booking.checkOutDate).toLocaleDateString()}</p>
-                <p><strong>Status:</strong> {booking.status}</p>
-                <p><strong>Payment Status:</strong> {booking.paymentStatus}</p>
+        
+        <div className="booking-tabs">
+          <button 
+            className={`tab-button ${activeTab === 'all' ? 'active' : ''}`}
+            onClick={() => setActiveTab('all')}
+          >
+            All ({getTabCount('all')})
+          </button>
+          <button 
+            className={`tab-button ${activeTab === 'pending approval' ? 'active' : ''}`}
+            onClick={() => setActiveTab('pending approval')}
+          >
+            Pending ({getTabCount('pending approval')})
+          </button>
+          <button 
+            className={`tab-button ${activeTab === 'approved' ? 'active' : ''}`}
+            onClick={() => setActiveTab('approved')}
+          >
+            Approved ({getTabCount('approved')})
+          </button>
+          <button 
+            className={`tab-button ${activeTab === 'completed' ? 'active' : ''}`}
+            onClick={() => setActiveTab('completed')}
+          >
+            Completed ({getTabCount('completed')})
+          </button>
+          <button 
+            className={`tab-button ${activeTab === 'cancelled' ? 'active' : ''}`}
+            onClick={() => setActiveTab('cancelled')}
+          >
+            Cancelled ({getTabCount('cancelled')})
+          </button>
+        </div>
 
-                <div className="star-rating">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <span
-                      key={star}
-                      className={`star ${star <= (rating[booking.id] || 0) ? 'filled' : ''}`}
-                      onClick={() => handleRatingClick(booking.id, star)}
-                    >
-                      ★
-                    </span>
-                  ))}
-                </div>
-                <button className="submit-rating" onClick={() => submitRating(booking.id, booking.roomId)}>
-                  Submit Rating
-                </button>
+        <div className="booking-list">
+          {Object.entries(groupedBookings).map(([monthYear, monthBookings]) => (
+            <div key={monthYear} className="booking-month-group">
+              <h3 className="month-year-header">{monthYear}</h3>
+              <div className="booking-cards-grid">
+                {monthBookings.map((booking) => (
+                  <BookingCard 
+                    key={booking.id} 
+                    booking={booking} 
+                    onBookingUpdate={refreshBookings}
+                  />
+                ))}
               </div>
-              <img src={booking.roomImage} alt={booking.roomName} className="room-image" /> {/* Add room image */}
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
     </div>
   );

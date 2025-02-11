@@ -266,18 +266,28 @@ section h2 {
 .amenity-item:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-    background-color: #444444;
+    background-color: #8B0000;
 }
 
 .amenity-item svg {
     color: #8B0000;
     font-size: 1.4rem;
+    transition: color 0.3s ease;
+}
+
+.amenity-item:hover svg {
+    color: white;
 }
 
 .amenity-item span {
     color: #333;
     font-size: 1rem;
     font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.amenity-item:hover span {
+    color: white;
 }
 
 @media (max-width: 768px) {

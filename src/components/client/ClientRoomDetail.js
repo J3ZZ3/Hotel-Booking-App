@@ -3,7 +3,7 @@ import './ClientStyles/ClientRoomDetail.css';
 import { IoWifi, IoTv, IoRestaurant, IoWater, IoArrowBack } from 'react-icons/io5';
 import { FaSwimmingPool, FaParking, FaWind } from 'react-icons/fa';
 import { MdBalcony, MdKitchen } from 'react-icons/md';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from './ClientNavbar';
 import { db } from '../../firebase/firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
@@ -13,7 +13,7 @@ const amenityIcons = {
     'TV': <IoTv />,
     'Room Service': <IoRestaurant />,
     'Ocean View': <IoWater />,
-    'Pool Access': <FaSwimmingPool />,
+    'Swimming Pool': <FaSwimmingPool />,
     'Parking': <FaParking />,
     'Air Conditioning': <FaWind />,
     'Balcony': <MdBalcony />,
@@ -23,52 +23,54 @@ const amenityIcons = {
 const defaultImage = 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2074&q=80';
 
 const ClientRoomDetail = () => {
+    const [room, setRoom] = useState(null);
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
     const { roomId } = useParams();
-    const location = useLocation();
-    const [room, setRoom] = useState(location.state?.room || null);
-    const [selectedImage, setSelectedImage] = useState(0);
-    const [imageUrl, setImageUrl] = useState(defaultImage);
 
     useEffect(() => {
         const fetchRoom = async () => {
-            if (!room) {
-                try {
-                    const roomDoc = await getDoc(doc(db, 'rooms', roomId));
-                    if (roomDoc.exists()) {
-                        const roomData = { id: roomDoc.id, ...roomDoc.data() };
-                        setRoom(roomData);
-                        if (roomData.imageUrl) {
-                            setImageUrl(roomData.imageUrl);
-                        }
-                    } else {
-                        console.log('No such room!');
-                        navigate('/client-dashboard');
+            try {
+                const roomDoc = await getDoc(doc(db, 'rooms', roomId));
+                if (roomDoc.exists()) {
+                    const roomData = roomDoc.data();
+                    // Initialize currentBookings if it doesn't exist
+                    if (typeof roomData.currentBookings === 'undefined') {
+                        roomData.currentBookings = 0;
                     }
-                } catch (error) {
-                    console.error('Error fetching room:', error);
+                    if (typeof roomData.maxBookings === 'undefined') {
+                        roomData.maxBookings = 5; // Default max bookings
+                    }
+                    setRoom({ id: roomDoc.id, ...roomData });
+                    if (roomData.imageUrl) {
+                        roomData.imageUrl = roomData.imageUrl;
+                    }
+                } else {
+                    console.log('No such room!');
                     navigate('/client-dashboard');
                 }
-            } else if (room.imageUrl) {
-                setImageUrl(room.imageUrl);
+            } catch (error) {
+                console.error('Error fetching room:', error);
+                navigate('/client-dashboard');
+            } finally {
+                setLoading(false);
             }
         };
 
         fetchRoom();
-    }, [roomId, room, navigate]);
+    }, [roomId, navigate]);
 
-    if (!room) {
+    if (loading) {
         return (
             <div className="room-detail-page">
-                <div className="animated-background">
-                    <div className="gradient-overlay"></div>
-                </div>
                 <Navbar />
-                <div className="loading-container">
-                    <div className="loading-spinner"></div>
-                </div>
+                <div className="loading-spinner">Loading...</div>
             </div>
         );
+    }
+
+    if (!room) {
+        return null;
     }
 
     const handleBookNow = () => {
@@ -76,28 +78,25 @@ const ClientRoomDetail = () => {
             navigate(`/booking/${roomId}`, { 
                 state: { 
                     room: room,
-                    imageUrl: imageUrl
+                    imageUrl: room.imageUrl
                 } 
             });
         }
     };
 
+    const handleBack = () => {
+        navigate(-1);
+    };
+
     return (
         <div className="room-detail-page">
-            <div className="animated-background">
-                <div className="gradient-overlay"></div>
-            </div>
             <Navbar />
             <div className="room-image-hero">
-                <img 
-                    src={imageUrl} 
-                    alt={room.name}
-                    className="room-main-image"
-                />
+                <img src={room.imageUrl} alt={room.name} className="room-main-image" />
                 <div className="hero-overlay">
                     <div className="hero-content">
-                        <button className="back-button" onClick={() => navigate('/client-dashboard')}>
-                            <IoArrowBack /> Back to Rooms
+                        <button className="back-button" onClick={handleBack}>
+                            <IoArrowBack /> Back
                         </button>
                         <h1>{room.name}</h1>
                     </div>

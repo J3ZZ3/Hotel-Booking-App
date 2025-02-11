@@ -47,7 +47,7 @@ h2 {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background-color: #ff4081;
+  background-color: red;
   color: white;
   border: none;
   border-radius: 50%;
@@ -60,7 +60,7 @@ h2 {
 }
 
 .fab-button:hover {
-  background-color: #e91e63;
+  background-color: red;
 }
 
 .admin-dashboard {

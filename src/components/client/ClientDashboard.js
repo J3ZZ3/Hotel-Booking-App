@@ -10,8 +10,9 @@ import { useNavigate } from 'react-router-dom';
 
 const ClientDashboard = () => {
   const [rooms, setRooms] = useState([]);
+  const [filteredRooms, setFilteredRooms] = useState([]);
+  const [loading, setLoading] = useState(true);
   const { currentUser } = useAuth();
-  const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,8 +27,11 @@ const ClientDashboard = () => {
           ...doc.data(),
         }));
         setRooms(roomsData);
+        setFilteredRooms(roomsData);
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching rooms: ", error);
+        setLoading(false);
       }
     };
 
@@ -38,13 +42,19 @@ const ClientDashboard = () => {
     navigate(`/room/${room.id}`, { state: { room } });
   };
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
+  const handleSearchResults = (results) => {
+    setFilteredRooms(results);
   };
+
+  if (loading) {
+    return <div className="loading">Loading...</div>;
+  }
 
   return (
     <div className="client-dashboard">
       <Navbar />
+      <br></br>
+      <br></br>
       <div className="dashboard-content">
         <h1>Discover Your Perfect Stay</h1>
         <div className="welcome-message">
@@ -54,21 +64,21 @@ const ClientDashboard = () => {
         </div>
         
         <div className="search-container">
-          <SearchBar 
-            value={searchTerm}
-            onChange={handleSearchChange}
-            placeholder="Search rooms by name or type..."
-          />
+          <SearchBar rooms={rooms} onSearchResults={handleSearchResults} />
         </div>
 
         <div className="rooms-grid">
-          {rooms.map(room => (
-            <RoomCard 
-              key={room.id} 
-              room={room} 
-              onClick={() => handleRoomClick(room)}
-            />
-          ))}
+          {filteredRooms.length > 0 ? (
+            filteredRooms.map(room => (
+              <RoomCard 
+                key={room.id} 
+                room={room} 
+                onClick={() => handleRoomClick(room)}
+              />
+            ))
+          ) : (
+            <div className="no-results">No rooms found matching your search.</div>
+          )}
         </div>
       </div>
     </div>

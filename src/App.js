@@ -19,6 +19,7 @@ import EditAdmin from "./components/admin/EditAdmin";
 import CustomerBookings from "./components/admin/CustomerBookings";
 import ClientRoomDetail from "./components/client/ClientRoomDetail"; // Add this import
 import BookingForm from "./components/client/BookingForm"; // Add this import
+import BookingDetail from './components/client/BookingDetail';
 
 const App = () => {
   return (
@@ -128,6 +129,7 @@ const App = () => {
                 </ProtectedRoute>
             } 
           />
+          <Route path="/booking-detail/:bookingId" element={<BookingDetail />} />
         </Routes>
       </Router>
     </AuthProvider>
