@@ -22,6 +22,9 @@ import BookingForm from "./components/client/BookingForm"; // Add this import
 import BookingDetail from './components/client/BookingDetail';
 import UpdateRoom from "./components/admin/UpdateRoom";
 import UserProfile from "./components/client/UserProfile"; // Add this import
+import Amenities from "./components/client/Amenities";
+import HelpSupport from "./components/client/HelpSupport";
+import HotelDetails from "./components/client/HotelDetails";
 
 const App = () => {
   return (
@@ -80,7 +83,6 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-          {/* Client Routes */}
           <Route path="/client-login" element={<ClientLogin />} />
           <Route path="/client-register" element={<ClientRegister />} />
           <Route
@@ -141,6 +143,9 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+          <Route path="/amenities" element={<Amenities />} />
+          <Route path="/help" element={<HelpSupport />} />
+          <Route path="/virtual-tour" element={<HotelDetails />} />
         </Routes>
       </Router>
     </AuthProvider>

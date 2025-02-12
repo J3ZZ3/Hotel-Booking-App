@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { IoCalendar, IoChevronForward, IoHome } from 'react-icons/io5';
-import './ClientStyles/BookingCard.css';
+import '../ClientStyles/BookingCard.css';
 
 const BookingCard = ({ booking }) => {
   const navigate = useNavigate();

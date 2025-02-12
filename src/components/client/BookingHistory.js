@@ -4,9 +4,9 @@ import { collection, getDocs, query, where, addDoc, doc, updateDoc } from "fireb
 import Swal from "sweetalert2";
 import "./ClientStyles/BookingHistory.css";
 import { Navigate } from "react-router-dom";
-import Navbar from './ClientNavbar';
+import Navbar from './common/ClientNavbar';
 import { useAuth } from '../../context/AuthContext'; // Import the Auth context
-import BookingCard from './BookingCard';
+import BookingCard from './common/BookingCard';
 import './ClientStyles/BookingCard.css';
 
 const BookingHistory = () => {

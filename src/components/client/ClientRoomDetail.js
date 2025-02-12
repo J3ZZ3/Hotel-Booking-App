@@ -4,7 +4,7 @@ import { IoWifi, IoTv, IoRestaurant, IoWater, IoArrowBack } from 'react-icons/io
 import { FaSwimmingPool, FaParking, FaWind } from 'react-icons/fa';
 import { MdBalcony, MdKitchen } from 'react-icons/md';
 import { useNavigate, useParams } from 'react-router-dom';
-import Navbar from './ClientNavbar';
+import Navbar from './common/ClientNavbar';
 import { db } from '../../firebase/firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
 import { FaStar, FaStarHalf, FaRegStar } from 'react-icons/fa';

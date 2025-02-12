@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { db } from '../../firebase/firebaseConfig';
 import { doc, updateDoc, getDoc, setDoc } from 'firebase/firestore';
 import { IoPersonCircle, IoMail, IoCall, IoHome, IoNewspaper, IoCamera } from 'react-icons/io5';
-import Navbar from './ClientNavbar';
+import Navbar from './common/ClientNavbar';
 import './ClientStyles/UserProfile.css';
 import Swal from 'sweetalert2';
 

@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { IoSearch } from 'react-icons/io5';
-import './ClientStyles/SearchBar.css';
-import { db } from '../../firebase/firebaseConfig';
+import '../ClientStyles/SearchBar.css';
+import { db } from '../../../firebase/firebaseConfig';
 import { collection, getDocs, query } from 'firebase/firestore';
 
 const SearchBar = ({ onSearchResults }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [rooms, setRooms] = useState([]);
 
-  // Fetch rooms once when component mounts
   useEffect(() => {
     const fetchRooms = async () => {
       try {
@@ -20,7 +19,7 @@ const SearchBar = ({ onSearchResults }) => {
           ...doc.data()
         }));
         setRooms(roomsData);
-        onSearchResults(roomsData); // Initialize with all rooms
+        onSearchResults(roomsData);
       } catch (error) {
         console.error("Error fetching rooms:", error);
       }
@@ -29,11 +28,10 @@ const SearchBar = ({ onSearchResults }) => {
     fetchRooms();
   }, [onSearchResults]);
 
-  // Filter rooms based on search term
   useEffect(() => {
     const filterRooms = () => {
       if (!searchTerm.trim()) {
-        onSearchResults(rooms); // Show all rooms when search is empty
+        onSearchResults(rooms);
         return;
       }
 
@@ -58,7 +56,6 @@ const SearchBar = ({ onSearchResults }) => {
 
   return (
     <div className="search-bar">
-      <IoSearch className="search-icon" />
       <input
         type="text"
         placeholder="Search rooms by name, type, price..."

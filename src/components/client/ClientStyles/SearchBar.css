@@ -15,7 +15,6 @@
     background: white;
     transition: all 0.3s ease;
     text-align: center;
-    padding-left: 35px;
 }
 
 .search-bar input:focus {
@@ -30,9 +29,10 @@
 
 .search-icon {
     position: absolute;
-    left: 10px;
-    color: #666;
+    right: 15px;
+    color: #1a1a1a;
     font-size: 1.2rem;
+    cursor: pointer;
 }
 
 @media (max-width: 768px) {

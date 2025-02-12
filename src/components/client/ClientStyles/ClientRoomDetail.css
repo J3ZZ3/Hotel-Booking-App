@@ -127,11 +127,12 @@
 .price {
     font-size: 2.5rem;
     font-weight: 600;
-    color: #8B0000;
+    color: #ff0000;
+    margin-top: 100px;
 }
 
 .per-night {
-    color: #666;
+    color: #000000;
     font-size: 1.1rem;
 }
 
@@ -142,6 +143,8 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;
+    margin-top: 50px;
+    margin-left: 50px;
 }
 
 .status-badge.available {
@@ -167,6 +170,7 @@
     min-width: 200px;
     position: relative;
     overflow: hidden;
+    margin-top: 70px;
 }
 
 .book-now-btn:not(.disabled)::after {

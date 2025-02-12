@@ -91,21 +91,64 @@ h1 {
     color: #ffffff;
 }
 
+.search-and-filter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin: 2rem auto;
+  max-width: 800px;
+  padding: 0 1rem;
+  position: relative;
+}
+
 .search-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto 2rem auto;
-    padding: 0 1rem;
+  width: 100%;
+  padding: 1.5rem;
+  border-radius: 10px;
+}
+
+.search-container input {
+  width: 100%;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+}
+
+.search-container input:focus {
+  border-color: #1a1a1a;
+  box-shadow: 0 0 0 2px rgba(26, 26, 26, 0.1);
+  outline: none;
+}
+
+.filter-container {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 0.5rem;
+  padding-right: 26rem;
+}
+
+.filter-container button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.rooms-section {
+  margin-top: 3rem;
 }
 
 .rooms-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 2rem;
-    padding: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .rooms-grid > div {  /* Target RoomCard components */
@@ -117,19 +160,46 @@ h1 {
     transform: translateY(-5px);
 }
 
+.no-results {
+  text-align: center;
+  padding: 3rem;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  margin: 2rem auto;
+  max-width: 600px;
+}
+
+.no-results h3 {
+  color: #1a1a1a;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.no-results p {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 968px) {
+  .search-and-filter {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.5rem;
+  }
+
+  .search-container,
+  .filter-container {
+    max-width: 100%;
+    width: 100%;
+  }
+}
+
 @media (max-width: 768px) {
-    .dashboard-content {
-        padding: 1rem;
-    }
-
-    .search-container {
-        padding: 0 0.5rem;
-    }
-
-    .rooms-grid {
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 1rem;
-    }
+  .rooms-grid {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
 }
 
 .client-dashboard::before {

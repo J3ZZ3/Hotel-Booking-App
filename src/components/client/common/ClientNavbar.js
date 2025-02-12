@@ -10,7 +10,7 @@ import {
     IoNotificationsOutline
 } from "react-icons/io5";
 import Swal from 'sweetalert2';
-import "./ClientStyles/ClientNavbar.css";
+import "../ClientStyles/ClientNavbar.css";
 
 const Navbar = () => {
     const [showDropdown, setShowDropdown] = useState(false);
@@ -64,14 +64,6 @@ const Navbar = () => {
                             <div className="dropdown-item" onClick={() => navigate('/booking-history')}>
                                 <IoBookOutline />
                                 <span>Booking History</span>
-                            </div>
-                            <div className="dropdown-item" onClick={() => navigate('/notifications')}>
-                                <IoNotificationsOutline />
-                                <span>Notifications</span>
-                            </div>
-                            <div className="dropdown-item" onClick={() => navigate('/settings')}>
-                                <IoSettingsOutline />
-                                <span>Settings</span>
                             </div>
                             <div className="dropdown-item" onClick={() => navigate('/help')}>
                                 <IoHelpCircleOutline />
