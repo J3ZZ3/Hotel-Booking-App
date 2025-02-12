@@ -7,6 +7,8 @@ import { getAuth } from 'firebase/auth';
 import { IoCalendar, IoPersonCircle, IoHome, IoCall, IoArrowBack, IoPeople, IoBed, IoExpand, IoEye } from 'react-icons/io5';
 import Swal from 'sweetalert2';
 import './ClientStyles/BookingForm.css';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const FormInput = ({ icon: Icon, ...props }) => (
   <div className="input-with-icon">
@@ -111,6 +113,156 @@ const BookingForm = () => {
     return isValid;
   };
 
+  const generateReceipt = (bookingData, paymentData) => {
+    const doc = new jsPDF();
+    
+    // Add hotel logo (if you have one)
+    // doc.addImage(hotelLogo, 'PNG', 10, 10, 50, 20);
+    
+    // Set colors
+    const primaryColor = [139, 0, 0];  // Dark red
+    const secondaryColor = [60, 60, 60];  // Dark grey
+    const lightGrey = [128, 128, 128];  // Light grey
+
+    // Header
+    doc.setFillColor(...primaryColor);
+    doc.rect(0, 0, 220, 40, 'F');
+    
+    // Hotel name
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(24);
+    doc.text('DOMICILE HOTELS', 105, 20, { align: 'center' });
+    
+    doc.setFontSize(12);
+    doc.text('LUXURY STAYS', 105, 30, { align: 'center' });
+
+    // Receipt title
+    doc.setTextColor(...secondaryColor);
+    doc.setFontSize(18);
+    doc.text('PAYMENT RECEIPT', 105, 55, { align: 'center' });
+
+    // Booking reference and date
+    doc.setFontSize(10);
+    doc.setTextColor(...lightGrey);
+    doc.text(`Receipt No: ${bookingData.id}`, 15, 65);
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 195, 65, { align: 'right' });
+
+    // Divider
+    doc.setDrawColor(...primaryColor);
+    doc.setLineWidth(0.5);
+    doc.line(15, 70, 195, 70);
+
+    // Guest Information
+    doc.setFontSize(14);
+    doc.setTextColor(...secondaryColor);
+    doc.text('Guest Information', 15, 85);
+
+    const guestInfo = [
+      ['Guest Name:', bookingData.fullName],
+      ['Email:', bookingData.email],
+      ['Contact:', bookingData.contactNumber],
+      ['Address:', bookingData.address]
+    ];
+
+    doc.autoTable({
+      startY: 90,
+      head: [],
+      body: guestInfo,
+      theme: 'plain',
+      styles: {
+        fontSize: 10,
+        cellPadding: 3,
+      },
+      columnStyles: {
+        0: { fontStyle: 'bold', cellWidth: 60 },
+        1: { cellWidth: 100 }
+      },
+      margin: { left: 15 }
+    });
+
+    // Booking Details
+    doc.setFontSize(14);
+    doc.setTextColor(...secondaryColor);
+    doc.text('Booking Details', 15, doc.autoTable.previous.finalY + 15);
+
+    const bookingDetails = [
+      ['Room Type:', bookingData.roomName],
+      ['Check-in:', new Date(bookingData.checkInDate).toLocaleDateString()],
+      ['Check-out:', new Date(bookingData.checkOutDate).toLocaleDateString()],
+      ['Number of Nights:', calculateNights()],
+      ['Room Capacity:', `${bookingData.capacity} Persons`],
+      ['Bed Type:', bookingData.bedType],
+      ['View:', bookingData.view]
+    ];
+
+    doc.autoTable({
+      startY: doc.autoTable.previous.finalY + 20,
+      head: [],
+      body: bookingDetails,
+      theme: 'plain',
+      styles: {
+        fontSize: 10,
+        cellPadding: 3,
+      },
+      columnStyles: {
+        0: { fontStyle: 'bold', cellWidth: 60 },
+        1: { cellWidth: 100 }
+      },
+      margin: { left: 15 }
+    });
+
+    // Payment Details
+    doc.setFontSize(14);
+    doc.setTextColor(...secondaryColor);
+    doc.text('Payment Details', 15, doc.autoTable.previous.finalY + 15);
+
+    const paymentDetails = [
+      ['Payment ID:', paymentData.id],
+      ['Payment Status:', 'Paid'],
+      ['Room Rate per Night:', `$${roomData.price}`],
+      ['Total Amount Paid:', `$${bookingData.totalAmount}`]
+    ];
+
+    doc.autoTable({
+      startY: doc.autoTable.previous.finalY + 20,
+      head: [],
+      body: paymentDetails,
+      theme: 'plain',
+      styles: {
+        fontSize: 10,
+        cellPadding: 3,
+      },
+      columnStyles: {
+        0: { fontStyle: 'bold', cellWidth: 60 },
+        1: { cellWidth: 100 }
+      },
+      margin: { left: 15 }
+    });
+
+    // Footer
+    const pageHeight = doc.internal.pageSize.height;
+    
+    // Divider line
+    doc.setDrawColor(...lightGrey);
+    doc.setLineWidth(0.2);
+    doc.line(15, pageHeight - 30, 195, pageHeight - 30);
+
+    // Footer text
+    doc.setFontSize(8);
+    doc.setTextColor(...lightGrey);
+    doc.text('Thank you for choosing Domicile Hotels', 105, pageHeight - 25, { align: 'center' });
+    doc.text('123 Luxury Avenue, Pretoria, South Africa', 105, pageHeight - 20, { align: 'center' });
+    doc.text('Tel: +27 12 345 6789 | Email: info@domicilehotels.com', 105, pageHeight - 15, { align: 'center' });
+
+    // QR Code (optional)
+    // doc.addImage(qrCode, 'PNG', 170, pageHeight - 40, 25, 25);
+
+    // Save the PDF
+    const fileName = `DomicileHotels_Receipt_${bookingData.id}.pdf`;
+    doc.save(fileName);
+  };
+
   const handlePaymentSuccess = async (data, actions) => {
     try {
       if (!validateForm(true)) return;
@@ -127,71 +279,53 @@ const BookingForm = () => {
         throw new Error('User not authenticated');
       }
 
-      // Check room availability again before proceeding
-      const roomRef = doc(db, "rooms", roomData.id);
-      const roomSnap = await getDoc(roomRef);
-      
-      if (!roomSnap.exists()) {
-        throw new Error('Room no longer exists');
-      }
-
-      const currentRoomData = roomSnap.data();
-      if (currentRoomData.currentBookings >= currentRoomData.maxBookings) {
-        throw new Error('Room is no longer available');
-      }
-
-      // Check for date conflicts one more time
-      if (!validateDates(formData.checkInDate, formData.checkOutDate)) {
-        throw new Error('Selected dates are no longer available');
-      }
-
-      // Create the booking with additional room details
-      const bookingRef = await addDoc(collection(db, "bookings"), {
+      // Create the booking document with safe access to roomImage
+      const bookingData = {
         userId: user.uid,
         roomId: roomData.id,
-        roomName: roomData.name,
-        roomImage: roomData.imageUrl,
-        capacity: roomData.capacity,
-        bedType: roomData.bedType,
-        eoomType: roomData.type,
-        view: roomData.view,
-        ...formData,
+        roomName: roomData.name || 'Room',
+        roomImage: roomData.images?.[0] || '', // Safe access with fallback
+        capacity: roomData.capacity || 2,
+        bedType: roomData.bedType || 'Standard',
+        view: roomData.view || 'Standard',
+        checkInDate: formData.checkInDate,
+        checkOutDate: formData.checkOutDate,
+        fullName: formData.fullName,
+        email: formData.email,
+        contactNumber: formData.contactNumber,
+        address: formData.address,
+        specialRequests: formData.specialRequests,
         totalAmount: calculateNights() * roomData.price,
         status: 'Pending Approval',
         paymentStatus: 'Paid',
         paymentId: captureResult.id,
         createdAt: new Date(),
         updatedAt: new Date()
-      });
+      };
 
-      // Update room availability
-      await updateDoc(roomRef, {
-        currentBookings: (currentRoomData.currentBookings || 0) + 1,
-        status: (currentRoomData.currentBookings + 1) >= currentRoomData.maxBookings ? 
-          "Unavailable" : "Available",
-        lastUpdated: new Date()
-      });
+      const bookingRef = await addDoc(collection(db, "bookings"), bookingData);
+      
+      // Generate and download receipt
+      generateReceipt({ ...bookingData, id: bookingRef.id }, captureResult);
 
       // Show success message
-      await Swal.fire({
+      Swal.fire({
         icon: 'success',
         title: 'Booking Successful!',
-        text: 'Your booking has been confirmed and payment processed successfully.',
-        confirmButtonText: 'View Booking History'
+        text: 'Your payment receipt has been downloaded.',
+        confirmButtonText: 'View Booking',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate(`/booking-detail/${bookingRef.id}`);
+        }
       });
 
-      // Navigate to booking history
-      navigate('/booking-history');
-
     } catch (error) {
-      console.error('Booking Error:', error);
-      
-      // Show error message
-      await Swal.fire({
+      console.error('Error processing payment:', error);
+      Swal.fire({
         icon: 'error',
-        title: 'Booking Failed',
-        text: error.message || 'There was an error processing your booking. Please try again.',
-        confirmButtonText: 'OK'
+        title: 'Payment Error',
+        text: 'There was an error processing your payment. Please try again.',
       });
     }
   };
