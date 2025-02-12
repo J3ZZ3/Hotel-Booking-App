@@ -92,25 +92,19 @@ button {
 .customer-bookings-page {
   min-height: 100vh;
   background-color: #1a1a1a;
-  padding: 80px 0 2rem 0;
-  margin: 0;
-  position: relative;
-  width: 100%;
-  overflow-x: hidden;
+  padding-top: 80px;
 }
 
 .customer-bookings-container {
-  width: 100%;
   max-width: 1200px;
-  margin: 2rem auto;
-  padding: 0 2rem;
+  margin: 0 auto;
+  padding: 2rem;
 }
 
 .customer-bookings-container h1 {
-  color: #ffffff;
-  font-size: 2.2rem;
+  color: white;
   margin-bottom: 2rem;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  font-size: 2rem;
 }
 
 .month-group {
@@ -118,16 +112,16 @@ button {
 }
 
 .month-header {
-  color: #c0392b;
-  font-size: 1.8rem;
+  color: white;
   margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid rgba(192, 57, 43, 0.3);
 }
 
 .bookings-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 2rem;
 }
 
@@ -198,18 +192,17 @@ button {
 }
 
 .loading {
-  text-align: center;
   color: white;
+  text-align: center;
+  padding: 2rem;
   font-size: 1.2rem;
-  margin-top: 2rem;
 }
 
 .no-bookings {
+  color: white;
   text-align: center;
-  color: #999;
+  padding: 2rem;
   font-size: 1.2rem;
-  margin-top: 2rem;
-  grid-column: 1 / -1;
 }
 
 .bookings-header {
@@ -252,7 +245,7 @@ button {
 
 @media (max-width: 768px) {
   .customer-bookings-container {
-    padding: 0 1rem;
+    padding: 1rem;
   }
   
   .bookings-grid {

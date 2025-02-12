@@ -1,10 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { IoSearch } from 'react-icons/io5';
 import './ClientStyles/SearchBar.css';
+import { db } from '../../firebase/firebaseConfig';
+import { collection, getDocs, query } from 'firebase/firestore';
 
-const SearchBar = ({ rooms, onSearchResults }) => {
+const SearchBar = ({ onSearchResults }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [rooms, setRooms] = useState([]);
 
+  // Fetch rooms once when component mounts
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        const roomsCollection = collection(db, 'rooms');
+        const roomsQuery = query(roomsCollection);
+        const querySnapshot = await getDocs(roomsQuery);
+        const roomsData = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setRooms(roomsData);
+        onSearchResults(roomsData); // Initialize with all rooms
+      } catch (error) {
+        console.error("Error fetching rooms:", error);
+      }
+    };
+
+    fetchRooms();
+  }, [onSearchResults]);
+
+  // Filter rooms based on search term
   useEffect(() => {
     const filterRooms = () => {
       if (!searchTerm.trim()) {
@@ -15,12 +40,12 @@ const SearchBar = ({ rooms, onSearchResults }) => {
       const searchTermLower = searchTerm.toLowerCase();
       const filtered = rooms.filter(room => {
         return (
-          room.name.toLowerCase().includes(searchTermLower) ||
-          room.type.toLowerCase().includes(searchTermLower) ||
-          room.description.toLowerCase().includes(searchTermLower) ||
-          room.price.toString().includes(searchTermLower) ||
-          (room.bedType && room.bedType.toLowerCase().includes(searchTermLower)) ||
-          (room.view && room.view.toLowerCase().includes(searchTermLower))
+          room.name?.toLowerCase().includes(searchTermLower) ||
+          room.type?.toLowerCase().includes(searchTermLower) ||
+          room.description?.toLowerCase().includes(searchTermLower) ||
+          room.price?.toString().includes(searchTermLower) ||
+          room.bedType?.toLowerCase().includes(searchTermLower) ||
+          room.view?.toLowerCase().includes(searchTermLower)
         );
       });
 

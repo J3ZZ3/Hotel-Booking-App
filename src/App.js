@@ -21,6 +21,7 @@ import ClientRoomDetail from "./components/client/ClientRoomDetail"; // Add this
 import BookingForm from "./components/client/BookingForm"; // Add this import
 import BookingDetail from './components/client/BookingDetail';
 import UpdateRoom from "./components/admin/UpdateRoom";
+import UserProfile from "./components/client/UserProfile"; // Add this import
 
 const App = () => {
   return (
@@ -93,7 +94,7 @@ const App = () => {
           <Route
             path="/booking-history"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute>style
                 <BookingHistory />
               </ProtectedRoute>
             }
@@ -132,6 +133,14 @@ const App = () => {
           />
           <Route path="/booking-detail/:bookingId" element={<BookingDetail />} />
           <Route path="/update-room/:roomId" element={<UpdateRoom />} />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <UserProfile />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </Router>
     </AuthProvider>
