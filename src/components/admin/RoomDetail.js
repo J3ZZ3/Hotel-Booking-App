@@ -8,13 +8,16 @@ import './AdminStyles/RoomDetail.css';
 const RoomDetail = ({ room, onClose }) => {
   const navigate = useNavigate();
 
+  if (!room) {
+    return null;
+  }
+
   const handleEdit = () => {
-    navigate(`/edit-room/${room.id}`);
+    navigate(`/update-room/${room.id}`);
   };
 
   const handleDelete = async () => {
     try {
-      // Show confirmation dialog
       const result = await Swal.fire({
         title: 'Are you sure?',
         text: "You won't be able to revert this!",
@@ -29,10 +32,8 @@ const RoomDetail = ({ room, onClose }) => {
       });
 
       if (result.isConfirmed) {
-        // Delete the room
         await deleteDoc(doc(db, 'rooms', room.id));
         
-        // Show success message
         await Swal.fire({
           title: 'Deleted!',
           text: 'The room has been deleted.',
@@ -43,7 +44,6 @@ const RoomDetail = ({ room, onClose }) => {
           }
         });
         
-        // Close the detail view and refresh the page
         onClose();
         window.location.reload();
       }
@@ -61,8 +61,9 @@ const RoomDetail = ({ room, onClose }) => {
     }
   };
 
-  // Convert amenities to array if it's not already
-  const amenitiesList = Array.isArray(room.amenities) ? room.amenities : [];
+  const amenitiesList = room.amenities ? (
+    Array.isArray(room.amenities) ? room.amenities : [room.amenities]
+  ) : [];
 
   return (
     <div className="room-detail-overlay" onClick={onClose}>
@@ -70,11 +71,11 @@ const RoomDetail = ({ room, onClose }) => {
         <button className="close-button" onClick={onClose}>&times;</button>
         
         <div className="room-detail-image-container">
-          <img src={room.imageUrl} alt={room.name} className="room-detail-image" />
+          <img src={room.imageUrl || ''} alt={room.name || 'Room'} className="room-detail-image" />
         </div>
 
         <div className="room-detail-info">
-          <h2>{room.name}</h2>
+          <h2>{room.name || 'Unnamed Room'}</h2>
           
           <div className="detail-section">
             <h3>Room Details</h3>

@@ -20,6 +20,7 @@ import CustomerBookings from "./components/admin/CustomerBookings";
 import ClientRoomDetail from "./components/client/ClientRoomDetail"; // Add this import
 import BookingForm from "./components/client/BookingForm"; // Add this import
 import BookingDetail from './components/client/BookingDetail';
+import UpdateRoom from "./components/admin/UpdateRoom";
 
 const App = () => {
   return (
@@ -130,6 +131,7 @@ const App = () => {
             } 
           />
           <Route path="/booking-detail/:bookingId" element={<BookingDetail />} />
+          <Route path="/update-room/:roomId" element={<UpdateRoom />} />
         </Routes>
       </Router>
     </AuthProvider>

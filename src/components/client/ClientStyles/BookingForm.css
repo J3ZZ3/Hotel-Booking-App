@@ -769,11 +769,29 @@ html, body {
     color: #856404;
 }
 
+.paypal-error-notice p {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+}
+
 .paypal-error-notice ul {
-    margin-top: 0.5rem;
+    margin: 0.5rem 0;
     padding-left: 1.5rem;
 }
 
 .paypal-error-notice li {
     margin: 0.25rem 0;
+    font-size: 0.9rem;
+}
+
+.paypal-loading-message {
+    text-align: center;
+    padding: 1rem;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.payment-section {
+    position: relative;
+    min-height: 150px;
 }

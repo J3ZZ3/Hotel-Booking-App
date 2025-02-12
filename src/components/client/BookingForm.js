@@ -39,6 +39,7 @@ const BookingForm = () => {
   });
   const [isFormValid, setIsFormValid] = useState(false);
   const [currentBookings, setCurrentBookings] = useState([]);
+  const [paypalLoaded, setPaypalLoaded] = useState(false);
   const [paypalError, setPaypalError] = useState(false);
 
   useEffect(() => {
@@ -230,12 +231,8 @@ const BookingForm = () => {
     onApprove: handlePaymentSuccess,
     onError: (err) => {
       console.error('PayPal Error:', err);
-      Swal.fire({
-        icon: 'error',
-        title: 'Payment Failed',
-        text: 'There was an issue processing your payment. Please try again.',
-        confirmButtonText: 'OK'
-      });
+      setPaypalError(true);
+      setPaypalLoaded(false);
     },
     onCancel: () => {
       Swal.fire({
@@ -244,6 +241,10 @@ const BookingForm = () => {
         text: 'You have cancelled the payment process.',
         confirmButtonText: 'OK'
       });
+    },
+    onInit: () => {
+      setPaypalLoaded(true);
+      setPaypalError(false);
     }
   };
 
@@ -342,48 +343,33 @@ const BookingForm = () => {
           <SummaryItem label="Total Amount" value={`$${totalPrice}`} />
           
           <div className="payment-section">
-            <div className="paypal-button-container">
-              {!isFormValid ? (
-                <div className="form-warning">Please fill in all required fields to proceed with payment.</div>
-              ) : (
-                <PayPalScriptProvider 
-                  options={{
-                    "client-id": process.env.REACT_APP_PAYPAL_CLIENT_ID,
-                    currency: "USD",
-                    intent: "capture",
-                    "disable-funding": "credit,card"
-                  }}
-                >
-                  <PayPalButtons {...paypalButtonConfig} />
-                </PayPalScriptProvider>
-              )}
-            </div>
-            
-            {currentBookings.length > 0 && (
-              <div className="current-bookings-section">
-                <h3>Current Bookings for this Room:</h3>
-                <div className="bookings-list">
-                  {currentBookings.map(booking => (
-                    <div key={booking.id} className="booking-date-item">
-                      <IoCalendar className="calendar-icon" />
-                      <span>
-                        {new Date(booking.checkInDate).toLocaleDateString()} - {new Date(booking.checkOutDate).toLocaleDateString()}
-                      </span>
-                      <span className="booking-status">{booking.status}</span>
-                    </div>
-                  ))}
-                </div>
+            {!paypalLoaded && (
+              <div className="paypal-loading-message">
+                Loading payment options...
               </div>
             )}
+            
+            <PayPalScriptProvider 
+              options={{
+                "client-id": process.env.REACT_APP_PAYPAL_CLIENT_ID,
+                currency: "USD",
+                intent: "capture",
+                "disable-funding": "credit,card"
+              }}
+            >
+              <PayPalButtons {...paypalButtonConfig} />
+            </PayPalScriptProvider>
 
             {paypalError && (
               <div className="paypal-error-notice">
-                <p>Having trouble with PayPal? Try:</p>
+                <p>Having trouble with PayPal? Try these solutions:</p>
                 <ul>
-                  <li>Temporarily disabling your ad blocker</li>
-                  <li>Using a different browser</li>
-                  <li>Checking your internet connection</li>
+                  <li>Temporarily disable your ad blocker for this site</li>
+                  <li>Use a different browser</li>
+                  <li>Check your internet connection</li>
+                  <li>Clear your browser cache and cookies</li>
                 </ul>
+                <p>If problems persist, please contact support.</p>
               </div>
             )}
           </div>
