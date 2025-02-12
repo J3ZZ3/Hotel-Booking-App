@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { auth } from "../firebase/firebaseConfig";
-import { db } from "../firebase/firebaseConfig";
+import { auth, db } from "../firebase/firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
 
 const AuthContext = createContext();
 
@@ -12,10 +12,17 @@ export const AuthProvider = ({ children }) => {
         const unsubscribe = auth.onAuthStateChanged(async (user) => {
             setCurrentUser(user);
             if (user) {
-                // Fetch additional user data from Firestore
-                const userDoc = await db.collection('users').doc(user.uid).get();
-                if (userDoc.exists) {
-                    setUserProfile(userDoc.data());
+                try {
+                    // Fetch additional user data from Firestore using v9 syntax
+                    const userDocRef = doc(db, 'users', user.uid);
+                    const userDocSnap = await getDoc(userDocRef);
+                    
+                    if (userDocSnap.exists()) {
+                        setUserProfile(userDocSnap.data());
+                    }
+                } catch (error) {
+                    console.error("Error fetching user profile:", error);
+                    setUserProfile(null);
                 }
             } else {
                 setUserProfile(null);

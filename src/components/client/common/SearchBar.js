@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { IoSearch } from 'react-icons/io5';
 import '../ClientStyles/SearchBar.css';
 import { db } from '../../../firebase/firebaseConfig';
-import { collection, getDocs, query } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 
 const SearchBar = ({ onSearchResults }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -11,9 +10,8 @@ const SearchBar = ({ onSearchResults }) => {
   useEffect(() => {
     const fetchRooms = async () => {
       try {
-        const roomsCollection = collection(db, 'rooms');
-        const roomsQuery = query(roomsCollection);
-        const querySnapshot = await getDocs(roomsQuery);
+        const roomsRef = collection(db, 'rooms');
+        const querySnapshot = await getDocs(roomsRef);
         const roomsData = querySnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()

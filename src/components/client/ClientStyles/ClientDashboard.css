@@ -1,3 +1,9 @@
+body, html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
 .client-dashboard-cd {
     display: flex;
     flex-direction: column;
@@ -63,10 +69,14 @@ h1 {
 }
 
 .client-dashboard {
-    min-height: 100vh;
+    min-height: 300vh;
+    height: 100%;
     background-image: url('../../assets/clientdashboard.jpg');
     background-size: cover;
     background-position: center;
+    position: absolute;
+    background-attachment: fixed; /* This prevents the background from shrinking */
+
 }
 
 .dashboard-content {

@@ -1,25 +1,29 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from './common/ClientNavbar';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock, 
          FaParking, FaWifi, FaSwimmingPool, FaConciergeBell } from 'react-icons/fa';
 import hotelExterior from '../assets/hotel-front.jpg';
 import lobby from '../assets/lobby.jpg';
 import pool from '../assets/pool.jpg';
+import 'leaflet/dist/leaflet.css';
 import './ClientStyles/HotelDetails.css';
+import L from 'leaflet';
 
-// Replace with your Mapbox access token
-mapboxgl.accessToken = 'your_mapbox_access_token';
+// Fix for default marker icon
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
+    iconUrl: require('leaflet/dist/images/marker-icon.png'),
+    shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+});
 
 const HotelDetails = () => {
-    const mapContainer = useRef(null);
-    const map = useRef(null);
     const [activeImage, setActiveImage] = useState(0);
 
     const hotelLocation = {
-        lng: 28.0473,  // Pretoria, South Africa coordinates
-        lat: -25.7479,
+        lat: -25.7479,  // Pretoria, South Africa coordinates
+        lng: 28.0473,
         zoom: 15
     };
 
@@ -37,36 +41,13 @@ const HotelDetails = () => {
     ];
 
     useEffect(() => {
-        if (map.current) return;
-
-        map.current = new mapboxgl.Map({
-            container: mapContainer.current,
-            style: 'mapbox://styles/mapbox/dark-v11',
-            center: [hotelLocation.lng, hotelLocation.lat],
-            zoom: hotelLocation.zoom,
-            scrollZoom: false
-        });
-
-        // Add navigation controls
-        map.current.addControl(new mapboxgl.NavigationControl());
-
-        // Add marker
-        new mapboxgl.Marker()
-            .setLngLat([hotelLocation.lng, hotelLocation.lat])
-            .setPopup(new mapboxgl.Popup().setHTML("<h3>Domicile Hotels</h3><p>Luxury Stays</p>"))
-            .addTo(map.current);
-
-        // Clean up
-        return () => map.current.remove();
-    }, []);
-
-    // Auto-rotate images
-    useEffect(() => {
         const timer = setInterval(() => {
-            setActiveImage((current) => (current + 1) % images.length);
+            setActiveImage((prevIndex) => 
+                prevIndex === images.length - 1 ? 0 : prevIndex + 1
+            );
         }, 5000);
         return () => clearInterval(timer);
-    }, []);
+    }, [images.length]);
 
     return (
         <div className="hotel-details-page">
@@ -134,7 +115,23 @@ const HotelDetails = () => {
 
                 <div className="map-section">
                     <h2>Our Location</h2>
-                    <div ref={mapContainer} className="map-container" />
+                    <MapContainer 
+                        center={[hotelLocation.lat, hotelLocation.lng]} 
+                        zoom={hotelLocation.zoom} 
+                        scrollWheelZoom={false}
+                        style={{ height: '400px', width: '100%', borderRadius: '12px' }}
+                    >
+                        <TileLayer
+                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        />
+                        <Marker position={[hotelLocation.lat, hotelLocation.lng]}>
+                            <Popup>
+                                <b>Domicile Hotels</b><br />
+                                Luxury Stays
+                            </Popup>
+                        </Marker>
+                    </MapContainer>
                 </div>
             </div>
         </div>

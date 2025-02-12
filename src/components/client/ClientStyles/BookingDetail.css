@@ -78,6 +78,10 @@
   gap: 1.5rem;
 }
 
+.info-grid h3 {
+  color: black;
+}
+
 .info-item {
   display: flex;
   align-items: center;
@@ -85,7 +89,7 @@
   padding: 1rem;
   background: #07060600;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(0, 0, 0, 0.2);
 }
 
 .info-icon {
@@ -104,15 +108,15 @@
 }
 
 .info-value {
-  color: #ff00c8;
+  color: #020202;
   font-weight: 500;
 }
 
 .special-requests {
-  background: #15ff00;
+  background: #ffffff00;
   padding: 1.5rem;
   border-radius: 10px;
-  color: #666;
+  color: #000000;
   line-height: 1.6;
 }
 
@@ -146,4 +150,47 @@
   .room-preview {
     height: 200px;
   }
+}
+
+.room-specs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.spec-item {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.spec-label {
+  color: #6c757d;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.spec-value {
+  color: #212529;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.booking-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.booking-section h2 {
+  margin-bottom: 1.5rem;
+  color: #2c3e50;
+  font-size: 1.5rem;
+  font-weight: 600;
 } 

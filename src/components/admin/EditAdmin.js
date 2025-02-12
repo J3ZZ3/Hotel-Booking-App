@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
@@ -19,9 +19,9 @@ const EditAdmin = () => {
 
   useEffect(() => {
     fetchAdminData();
-  }, [adminId]);
+  }, [fetchAdminData]);
 
-  const fetchAdminData = async () => {
+  const fetchAdminData = useCallback(async () => {
     try {
       const adminDoc = await getDoc(doc(db, "admins", adminId));
       if (adminDoc.exists()) {
@@ -70,7 +70,7 @@ const EditAdmin = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [adminId, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

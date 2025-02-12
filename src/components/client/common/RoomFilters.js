@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { FaFilter, FaBed, FaUsers, FaDollarSign, 
-         FaWifi, FaTv, FaSnowflake, FaSmokingBan } from 'react-icons/fa';
+import { FaFilter, FaWifi, FaTv, FaSnowflake, FaSmokingBan } from 'react-icons/fa';
 import '../ClientStyles/RoomFilters.css';
 
 const RoomFilters = ({ onFilterChange }) => {
@@ -126,7 +125,7 @@ const RoomFilters = ({ onFilterChange }) => {
                 <div className="filters-content">
                     {/* Price Range Filter */}
                     <div className="filter-section">
-                        <h4>Price Range (R)</h4>
+                        <h4>Price Range ($)</h4>
                         <div className="price-range">
                             <input
                                 type="number"

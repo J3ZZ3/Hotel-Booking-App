@@ -62,7 +62,6 @@ const BookingDetail = () => {
               <h3>{booking.roomName}</h3>
               <InfoItem icon={IoPeople} label="Capacity" value={`${booking.capacity} persons`} />
               <InfoItem icon={IoBed} label="Bed Type" value={booking.bedType} />
-              <InfoItem icon={IoExpand} label="Room Size" value={`${booking.size} sq ft`} />
               <InfoItem icon={IoEye} label="View" value={booking.view} />
             </div>
           </section>

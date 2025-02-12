@@ -8,26 +8,27 @@ const BookingCard = ({ booking }) => {
   const [imageError, setImageError] = useState(false);
 
   return (
-    <div className="booking-card" onClick={() => navigate(`/booking-detail/${booking.id}`)}>
-      <div className="booking-card-image">
-        {!imageError ? (
-          <img 
-            src={booking.roomImage} 
-            alt={booking.roomName}
-            onError={() => setImageError(true)}
-          />
-        ) : (
-          <div className="image-placeholder">
-            <IoHome />
-          </div>
-        )}
-      </div>
+    <div 
+      className="booking-card" 
+      onClick={() => navigate(`/booking-detail/${booking.id}`)}
+      style={{
+        backgroundImage: !imageError && booking.roomImage ? `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)), url(${booking.roomImage})` : 'none',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        position: 'relative'
+      }}
+    >
+      {imageError && (
+        <div className="image-placeholder">
+          <IoHome />
+        </div>
+      )}
       <div className="booking-card-content">
-        <h3>{booking.roomName}</h3>
+        <h3>{booking.roomName || 'Room Name Not Available'}</h3>
         <div className="booking-dates">
           <IoCalendar />
           <span>
-            {new Date(booking.checkInDate).toLocaleDateString()} - {new Date(booking.checkOutDate).toLocaleDateString()}
+            {booking.checkInDate} - {booking.checkOutDate}
           </span>
         </div>
         <div className="booking-status-badge" data-status={booking.status.toLowerCase()}>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 import AdminNavbar from "./AdminNavbar";
@@ -12,9 +12,9 @@ const CustomerBookings = () => {
 
   useEffect(() => {
     fetchBookings();
-  }, []);
+  }, [fetchBookings]);
 
-  const fetchBookings = async () => {
+  const fetchBookings = useCallback(async () => {
     try {
       const bookingsQuery = query(
         collection(db, "bookings"),
@@ -41,7 +41,7 @@ const CustomerBookings = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const groupBookingsByMonth = (bookingsList) => {
     return bookingsList.reduce((groups, booking) => {

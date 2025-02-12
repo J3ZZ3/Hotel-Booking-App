@@ -39,6 +39,11 @@ const BookingHistory = () => {
         const userBookings = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
+          // Format dates for display
+          formattedCheckIn: new Date(doc.data().checkInDate).toLocaleDateString(),
+          formattedCheckOut: new Date(doc.data().checkOutDate).toLocaleDateString(),
+          // Ensure roomName is available
+          roomName: doc.data().roomName || 'Room Name Not Available'
         }));
 
         // Sort bookings by date (most recent first)
@@ -134,13 +139,22 @@ const BookingHistory = () => {
     return bookings.filter(booking => booking.status.toLowerCase() === status).length;
   };
 
-  // Group bookings by month and year
   const groupBookingsByDate = (bookings) => {
     const groups = {};
     
     bookings.forEach(booking => {
-      const date = new Date(booking.createdAt);
-      const monthYear = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+      // Make sure we have a valid date
+      const date = booking.createdAt ? 
+        (booking.createdAt instanceof Date ? 
+          booking.createdAt : 
+          new Date(booking.createdAt.seconds ? booking.createdAt.seconds * 1000 : booking.createdAt)
+        ) : new Date();
+
+      // Format the month and year
+      const monthYear = date.toLocaleString('default', { 
+        month: 'long',
+        year: 'numeric'
+      });
       
       if (!groups[monthYear]) {
         groups[monthYear] = [];
@@ -148,7 +162,19 @@ const BookingHistory = () => {
       groups[monthYear].push(booking);
     });
 
-    return groups;
+    // Sort the groups by date (most recent first)
+    const sortedGroups = {};
+    Object.keys(groups)
+      .sort((a, b) => {
+        const dateA = new Date(a);
+        const dateB = new Date(b);
+        return dateB - dateA;
+      })
+      .forEach(key => {
+        sortedGroups[key] = groups[key];
+      });
+
+    return sortedGroups;
   };
 
   const refreshBookings = async () => {
@@ -246,7 +272,15 @@ const BookingHistory = () => {
                 {monthBookings.map((booking) => (
                   <BookingCard 
                     key={booking.id} 
-                    booking={booking} 
+                    booking={{
+                      ...booking,
+                      roomName: booking.roomName,
+                      checkInDate: booking.formattedCheckIn,
+                      checkOutDate: booking.formattedCheckOut,
+                      status: booking.status,
+                      totalAmount: booking.totalAmount,
+                      roomImage: booking.roomImage
+                    }}
                     onBookingUpdate={refreshBookings}
                   />
                 ))}

@@ -69,7 +69,8 @@ const ClientDashboard = () => {
     }
     const fetchRooms = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "rooms"));
+        const roomsRef = collection(db, "rooms");
+        const querySnapshot = await getDocs(roomsRef);
         const roomsData = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
@@ -164,7 +165,7 @@ const ClientDashboard = () => {
         case 'size':
           return b.capacity - a.capacity;
         default:
-          return 0; // Keep original order for 'recommended'
+          return 0; 
       }
     });
   };

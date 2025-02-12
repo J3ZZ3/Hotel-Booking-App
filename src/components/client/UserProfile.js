@@ -23,43 +23,22 @@ const UserProfile = () => {
 
     useEffect(() => {
         const fetchUserProfile = async () => {
-            if (currentUser) {
-                try {
-                    const userDocRef = doc(db, 'users', currentUser.uid);
-                    const userDoc = await getDoc(userDocRef);
-                    
-                    if (userDoc.exists()) {
-                        setProfile({
-                            ...profile,
-                            ...userDoc.data(),
-                            email: currentUser.email
-                        });
-                    } else {
-                        // Create a new user document if it doesn't exist
-                        const newUserData = {
-                            displayName: currentUser.displayName || '',
-                            email: currentUser.email,
-                            phoneNumber: '',
-                            address: '',
-                            profilePicture: '',
-                            bio: ''
-                        };
-                        await setDoc(userDocRef, newUserData);
-                        setProfile(newUserData);
-                    }
-                } catch (error) {
-                    console.error("Error fetching profile:", error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Failed to load profile data'
-                    });
+            try {
+                const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+                if (userDoc.exists()) {
+                    setProfile(prevProfile => ({
+                        ...prevProfile,
+                        ...userDoc.data()
+                    }));
                 }
-                setLoading(false);
+            } catch (error) {
+                console.error('Error fetching user profile:', error);
             }
         };
 
-        fetchUserProfile();
+        if (currentUser) {
+            fetchUserProfile();
+        }
     }, [currentUser]);
 
     const handleImageUpload = async (e) => {

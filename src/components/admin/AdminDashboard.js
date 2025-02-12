@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from "react";
-import AddRoom from "./AddRoom";
-import RoomList from "./AdminRoomList";
 import { collection, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { ref, deleteObject } from "firebase/storage";
 import { db, storage } from "../../firebase/firebaseConfig";
@@ -14,11 +12,7 @@ import RoomCard from './RoomCard';
 import RoomDetail from './RoomDetail';
 
 const AdminDashboard = () => {
-  const [isAdding, setIsAdding] = useState(false);
   const [rooms, setRooms] = useState([]);
-  const [bookings, setBookings] = useState([]);
-  const [selectedRoom, setSelectedRoom] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -61,42 +55,16 @@ const AdminDashboard = () => {
             htmlContainer: 'dark-theme-content'
           }
         });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const fetchBookings = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, "bookings"));
-        const bookingsData = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setBookings(bookingsData);
-      } catch (error) {
-        console.error("Error fetching bookings: ", error);
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: "Failed to fetch bookings.",
-        });
       }
     };
 
     fetchRooms();
-    fetchBookings();
   }, []);
 
   const handleUpdateStatus = async (bookingId, newStatus) => {
     const bookingRef = doc(db, "bookings", bookingId);
     await updateDoc(bookingRef, { status: newStatus });
     alert(`Booking has been ${newStatus}`);
-    setBookings((prev) =>
-      prev.map((booking) =>
-        booking.id === bookingId ? { ...booking, status: newStatus } : booking
-      )
-    );
   };
 
   const handleLogout = async () => {
@@ -118,11 +86,11 @@ const AdminDashboard = () => {
   };
 
   const handleRoomClick = (room) => {
-    setSelectedRoom(room);
+    // Remove unused function
   };
 
   const handleCloseDetail = () => {
-    setSelectedRoom(null);
+    // Remove unused function
   };
 
   const handleDeleteRoom = async (roomId, imageUrl) => {
@@ -210,12 +178,6 @@ const AdminDashboard = () => {
           ))}
         </div>
       </div>
-      {selectedRoom && (
-        <RoomDetail 
-          room={selectedRoom} 
-          onClose={handleCloseDetail}
-        />
-      )}
       <button className="fab-button" onClick={handleLogout}>
         <FontAwesomeIcon icon={faSignOutAlt} />
       </button>
