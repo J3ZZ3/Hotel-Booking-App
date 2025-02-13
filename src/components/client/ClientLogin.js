@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase/firebaseConfig";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 import withReactContent from 'sweetalert2-react-content';
 import './ClientStyles/ClientLogin.css';
@@ -12,7 +12,8 @@ const ClientLogin = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const location = useLocation();
+  const { currentUser, login } = useAuth();
   const MySwal = withReactContent(Swal);
 
   useEffect(() => {
@@ -23,17 +24,21 @@ const ClientLogin = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setLoading(true); // Start loading
+    setLoading(true);
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      login();
+      
       MySwal.fire({
         title: "Login Successful",
         text: "You have successfully logged in.",
         icon: "success",
         confirmButtonText: "OK",
       });
-      navigate("/client-dashboard");
+
+      const from = location.state?.from?.pathname || "/client-dashboard";
+      navigate(from, { replace: true });
     } catch (err) {
       MySwal.fire({
         title: 'Login Failed',
@@ -42,7 +47,7 @@ const ClientLogin = () => {
         confirmButtonText: 'Retry',
       });
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
   };
 

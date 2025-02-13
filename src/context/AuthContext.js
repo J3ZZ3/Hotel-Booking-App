@@ -7,6 +7,7 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
     const [currentUser, setCurrentUser] = useState(null);
     const [userProfile, setUserProfile] = useState(null);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -23,17 +24,35 @@ export const AuthProvider = ({ children }) => {
                 } catch (error) {
                     console.error("Error fetching user profile:", error);
                     setUserProfile(null);
+                    setIsAuthenticated(false);
                 }
             } else {
                 setUserProfile(null);
+                setIsAuthenticated(false);
             }
         });
 
         return () => unsubscribe();
     }, []);
 
+    const login = () => {
+        setIsAuthenticated(true);
+    };
+
+    const logout = () => {
+        setIsAuthenticated(false);
+        setCurrentUser(null);
+        setUserProfile(null);
+    };
+
     return (
-        <AuthContext.Provider value={{ currentUser, userProfile }}>
+        <AuthContext.Provider value={{ 
+            currentUser, 
+            userProfile, 
+            isAuthenticated,
+            login,
+            logout
+        }}>
             {children}
         </AuthContext.Provider>
     );
