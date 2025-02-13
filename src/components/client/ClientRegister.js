@@ -13,7 +13,7 @@ const ClientRegister = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser, login } = useAuth();
   const MySwal = withReactContent(Swal);
 
   useEffect(() => {
@@ -33,21 +33,26 @@ const ClientRegister = () => {
       await addDoc(collection(db, "users"), {
         uid: user.uid,
         email: user.email,
-        password: password,
         role: "client",
-        isAdmin: false
+        isAdmin: false,
+        createdAt: new Date()
       });
+
+      login();
 
       MySwal.fire({
         title: "Registration Successful",
         text: "Your account has been created successfully!",
         icon: "success",
-        confirmButtonText: "OK",
+        confirmButtonText: "Continue",
         customClass: {
           popup: 'custom-popup'
         }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate("/client-dashboard");
+        }
       });
-      navigate("/client-login");
     } catch (err) {
       MySwal.fire({
         title: 'Registration Failed',

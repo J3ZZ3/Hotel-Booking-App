@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { db } from '../../firebase/firebaseConfig';
 import { collection, addDoc, doc, getDoc, updateDoc, getDocs, query, where } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
-import { IoCalendar, IoPersonCircle, IoHome, IoCall, IoArrowBack, IoPeople, IoBed, IoExpand, IoEye } from 'react-icons/io5';
+import { IoCalendar, IoPersonCircle, IoHome, IoCall, IoArrowBack, IoPeople, IoBed, IoExpand, IoEye, IoReload, IoMail } from 'react-icons/io5';
 import Swal from 'sweetalert2';
 import './ClientStyles/BookingForm.css';
-import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import ReceiptGenerator from './common/ReceiptGenerator';
+import PayPalPaymentButton from './common/PayPalPaymentButton';
 
 const FormInput = ({ icon: Icon, ...props }) => (
   <div className="input-with-icon">
@@ -24,9 +24,9 @@ const SummaryItem = ({ label, value }) => (
   </div>
 );
 
-const RoomInfo = ({ icon: Icon, label, value }) => value && (
-  <div className="info-item">
-    <Icon className="info-icon" />
+const RoomInfo = ({ icon: Icon, label, value, style }) => value && (
+  <div className="info-item" style={style}>
+    <Icon className="info-icon" style={{ color: 'white' }} />
     <span>{label}: {value}</span>
   </div>
 );
@@ -42,10 +42,13 @@ const BookingForm = () => {
   const [isFormValid, setIsFormValid] = useState(false);
   const [currentBookings, setCurrentBookings] = useState([]);
   const [paypalError, setPaypalError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     const fetchBookings = async () => {
       if (!roomData?.id) return;
+      setIsLoading(true);
       try {
         const querySnapshot = await getDocs(query(
           collection(db, "bookings"),
@@ -58,6 +61,8 @@ const BookingForm = () => {
         })).sort((a, b) => new Date(a.checkInDate) - new Date(b.checkInDate)));
       } catch (error) {
         console.error("Error fetching bookings:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchBookings();
@@ -113,161 +118,11 @@ const BookingForm = () => {
     return isValid;
   };
 
-  const generateReceipt = (bookingData, paymentData) => {
-    const doc = new jsPDF();
-    
-    // Add hotel logo (if you have one)
-    // doc.addImage(hotelLogo, 'PNG', 10, 10, 50, 20);
-    
-    // Set colors
-    const primaryColor = [139, 0, 0];  // Dark red
-    const secondaryColor = [60, 60, 60];  // Dark grey
-    const lightGrey = [128, 128, 128];  // Light grey
-
-    // Header
-    doc.setFillColor(...primaryColor);
-    doc.rect(0, 0, 220, 40, 'F');
-    
-    // Hotel name
-    doc.setTextColor(255, 255, 255);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(24);
-    doc.text('DOMICILE HOTELS', 105, 20, { align: 'center' });
-    
-    doc.setFontSize(12);
-    doc.text('LUXURY STAYS', 105, 30, { align: 'center' });
-
-    // Receipt title
-    doc.setTextColor(...secondaryColor);
-    doc.setFontSize(18);
-    doc.text('PAYMENT RECEIPT', 105, 55, { align: 'center' });
-
-    // Booking reference and date
-    doc.setFontSize(10);
-    doc.setTextColor(...lightGrey);
-    doc.text(`Receipt No: ${bookingData.id}`, 15, 65);
-    doc.text(`Date: ${new Date().toLocaleDateString()}`, 195, 65, { align: 'right' });
-
-    // Divider
-    doc.setDrawColor(...primaryColor);
-    doc.setLineWidth(0.5);
-    doc.line(15, 70, 195, 70);
-
-    // Guest Information
-    doc.setFontSize(14);
-    doc.setTextColor(...secondaryColor);
-    doc.text('Guest Information', 15, 85);
-
-    const guestInfo = [
-      ['Guest Name:', bookingData.fullName],
-      ['Email:', bookingData.email],
-      ['Contact:', bookingData.contactNumber],
-      ['Address:', bookingData.address]
-    ];
-
-    doc.autoTable({
-      startY: 90,
-      head: [],
-      body: guestInfo,
-      theme: 'plain',
-      styles: {
-        fontSize: 10,
-        cellPadding: 3,
-      },
-      columnStyles: {
-        0: { fontStyle: 'bold', cellWidth: 60 },
-        1: { cellWidth: 100 }
-      },
-      margin: { left: 15 }
-    });
-
-    // Booking Details
-    doc.setFontSize(14);
-    doc.setTextColor(...secondaryColor);
-    doc.text('Booking Details', 15, doc.autoTable.previous.finalY + 15);
-
-    const bookingDetails = [
-      ['Room Type:', bookingData.roomName],
-      ['Check-in:', new Date(bookingData.checkInDate).toLocaleDateString()],
-      ['Check-out:', new Date(bookingData.checkOutDate).toLocaleDateString()],
-      ['Number of Nights:', calculateNights()],
-      ['Room Capacity:', `${bookingData.capacity} Persons`],
-      ['Bed Type:', bookingData.bedType],
-      ['View:', bookingData.view]
-    ];
-
-    doc.autoTable({
-      startY: doc.autoTable.previous.finalY + 20,
-      head: [],
-      body: bookingDetails,
-      theme: 'plain',
-      styles: {
-        fontSize: 10,
-        cellPadding: 3,
-      },
-      columnStyles: {
-        0: { fontStyle: 'bold', cellWidth: 60 },
-        1: { cellWidth: 100 }
-      },
-      margin: { left: 15 }
-    });
-
-    // Payment Details
-    doc.setFontSize(14);
-    doc.setTextColor(...secondaryColor);
-    doc.text('Payment Details', 15, doc.autoTable.previous.finalY + 15);
-
-    const paymentDetails = [
-      ['Payment ID:', paymentData.id],
-      ['Payment Status:', 'Paid'],
-      ['Room Rate per Night:', `$${roomData.price}`],
-      ['Total Amount Paid:', `$${bookingData.totalAmount}`]
-    ];
-
-    doc.autoTable({
-      startY: doc.autoTable.previous.finalY + 20,
-      head: [],
-      body: paymentDetails,
-      theme: 'plain',
-      styles: {
-        fontSize: 10,
-        cellPadding: 3,
-      },
-      columnStyles: {
-        0: { fontStyle: 'bold', cellWidth: 60 },
-        1: { cellWidth: 100 }
-      },
-      margin: { left: 15 }
-    });
-
-    // Footer
-    const pageHeight = doc.internal.pageSize.height;
-    
-    // Divider line
-    doc.setDrawColor(...lightGrey);
-    doc.setLineWidth(0.2);
-    doc.line(15, pageHeight - 30, 195, pageHeight - 30);
-
-    // Footer text
-    doc.setFontSize(8);
-    doc.setTextColor(...lightGrey);
-    doc.text('Thank you for choosing Domicile Hotels', 105, pageHeight - 25, { align: 'center' });
-    doc.text('123 Luxury Avenue, Pretoria, South Africa', 105, pageHeight - 20, { align: 'center' });
-    doc.text('Tel: +27 12 345 6789 | Email: info@domicilehotels.com', 105, pageHeight - 15, { align: 'center' });
-
-    // QR Code (optional)
-    // doc.addImage(qrCode, 'PNG', 170, pageHeight - 40, 25, 25);
-
-    // Save the PDF
-    const fileName = `DomicileHotels_Receipt_${bookingData.id}.pdf`;
-    doc.save(fileName);
-  };
-
   const handlePaymentSuccess = async (data, actions) => {
+    setIsProcessing(true);
     try {
       if (!validateForm(true)) return;
 
-      // First capture the payment
       const captureResult = await actions.order.capture();
       
       if (captureResult.status !== 'COMPLETED') {
@@ -279,12 +134,11 @@ const BookingForm = () => {
         throw new Error('User not authenticated');
       }
 
-      // Create the booking document with safe access to roomImage
       const bookingData = {
         userId: user.uid,
         roomId: roomData.id,
         roomName: roomData.name || 'Room',
-        roomImage: roomData.images?.[0] || '', // Safe access with fallback
+        roomImage: roomData.images?.[0] || '',
         capacity: roomData.capacity || 2,
         bedType: roomData.bedType || 'Standard',
         view: roomData.view || 'Standard',
@@ -305,10 +159,8 @@ const BookingForm = () => {
 
       const bookingRef = await addDoc(collection(db, "bookings"), bookingData);
       
-      // Generate and download receipt
-      generateReceipt({ ...bookingData, id: bookingRef.id }, captureResult);
+      ReceiptGenerator.download({ ...bookingData, id: bookingRef.id }, captureResult);
 
-      // Show success message
       Swal.fire({
         icon: 'success',
         title: 'Booking Successful!',
@@ -327,6 +179,8 @@ const BookingForm = () => {
         title: 'Payment Error',
         text: 'There was an error processing your payment. Please try again.',
       });
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -337,56 +191,28 @@ const BookingForm = () => {
 
   if (!roomData) return <div className="booking-error">No room data available.</div>;
 
-  const totalPrice = calculateNights() * (roomData?.price || 0);
+  if (isLoading) {
+    return (
+      <div className="loading-screen">
+        <IoReload className="loading-icon" />
+        <p>Loading booking information...</p>
+      </div>
+    );
+  }
 
-  // Update the PayPal buttons configuration
-  const paypalButtonConfig = {
-    style: { 
-      layout: "vertical",
-      color: "gold",
-      shape: "rect",
-      label: "pay"
-    },
-    createOrder: (data, actions) => {
-      if (!validateForm(true)) {
-        return Promise.reject(new Error('Please fill all required fields'));
-      }
-      
-      return actions.order.create({
-        purchase_units: [{
-          amount: {
-            currency_code: "USD",
-            value: totalPrice.toString()
-          },
-          description: `Booking for ${roomData.name}`
-        }],
-        application_context: {
-          shipping_preference: 'NO_SHIPPING'
-        }
-      });
-    },
-    onApprove: handlePaymentSuccess,
-    onError: (err) => {
-      console.error('PayPal Error:', err);
-      Swal.fire({
-        icon: 'error',
-        title: 'Payment Failed',
-        text: 'There was an issue processing your payment. Please try again.',
-        confirmButtonText: 'OK'
-      });
-    },
-    onCancel: () => {
-      Swal.fire({
-        icon: 'info',
-        title: 'Payment Cancelled',
-        text: 'You have cancelled the payment process.',
-        confirmButtonText: 'OK'
-      });
-    }
-  };
+  const totalPrice = calculateNights() * (roomData?.price || 0);
 
   return (
     <div className="booking-layout">
+      {isProcessing && (
+        <div className="processing-overlay">
+          <div className="processing-content">
+            <IoReload className="loading-icon" />
+            <p>Processing your booking...</p>
+          </div>
+        </div>
+      )}
+      
       <div className="booking-page">
         <button className="back-button" onClick={() => navigate(-1)}>
           <IoArrowBack /> Back to Room Details
@@ -407,10 +233,10 @@ const BookingForm = () => {
                 <div className="room-additional-info">
                   <h4>Room Details</h4>
                   <div className="info-grid">
-                    <RoomInfo icon={IoPeople} label="Capacity" value={`${roomData.capacity} persons`} />
-                    <RoomInfo icon={IoBed} label="Bed" value={roomData.bedType} />
-                    <RoomInfo icon={IoEye} label="View" value={roomData.view} />
-                    <RoomInfo icon={IoHome} label="Floor"  value={roomData.floor} />
+                    <RoomInfo icon={IoPeople} label="Capacity" value={`${roomData.capacity} persons`} style={{ color: 'white', borderColor: 'white' }} />
+                    <RoomInfo icon={IoBed} label="Bed" value={roomData.bedType} style={{ color: 'white', borderColor: 'white' }} />
+                    <RoomInfo icon={IoEye} label="View" value={roomData.view} style={{ color: 'white', borderColor: 'white' }} />
+                    <RoomInfo icon={IoHome} label="Floor"  value={roomData.floor} style={{ color: 'white', borderColor: 'white' }} />
                   </div>
 
                   {roomData.policies && (
@@ -437,7 +263,7 @@ const BookingForm = () => {
 
                 <div className="form-group">
                   <label>Email</label>
-                  <FormInput icon={IoHome} type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Enter your email" required />
+                  <FormInput icon={IoMail} type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Enter your email" required />
                 </div>
 
                 <div className="form-group">
@@ -481,20 +307,13 @@ const BookingForm = () => {
           
           <div className="payment-section">
             <div className="paypal-button-container">
-              {!isFormValid ? (
-                <div className="form-warning">Please fill in all required fields to proceed with payment.</div>
-              ) : (
-                <PayPalScriptProvider 
-                  options={{
-                    "client-id": process.env.REACT_APP_PAYPAL_CLIENT_ID,
-                    currency: "USD",
-                    intent: "capture",
-                    "disable-funding": "credit,card"
-                  }}
-                >
-                  <PayPalButtons {...paypalButtonConfig} />
-                </PayPalScriptProvider>
-              )}
+              <PayPalPaymentButton 
+                amount={totalPrice}
+                description={`Booking for ${roomData.name}`}
+                onSuccess={handlePaymentSuccess}
+                validate={() => validateForm(true)}
+                disabled={!isFormValid}
+              />
             </div>
             
             {currentBookings.length > 0 && (

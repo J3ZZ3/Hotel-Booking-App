@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase/firebaseConfig";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import Swal from "sweetalert2";
 import withReactContent from 'sweetalert2-react-content';
 import './ClientStyles/ClientLogin.css';
 import { useAuth } from '../../context/AuthContext';
+import { IoReload } from 'react-icons/io5';
 
 const ClientLogin = () => {
   const [email, setEmail] = useState("");
@@ -13,14 +14,14 @@ const ClientLogin = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { currentUser, login } = useAuth();
+  const { currentUser, login, loading: authLoading } = useAuth();
   const MySwal = withReactContent(Swal);
 
   useEffect(() => {
-    if (currentUser) {
+    if (!authLoading && currentUser) {
       navigate("/client-dashboard");
     }
-  }, [currentUser, navigate]);
+  }, [currentUser, navigate, authLoading]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -28,17 +29,17 @@ const ClientLogin = () => {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      login();
+      await login();
       
       MySwal.fire({
         title: "Login Successful",
         text: "You have successfully logged in.",
         icon: "success",
         confirmButtonText: "OK",
+      }).then(() => {
+        const from = location.state?.from?.pathname || "/client-dashboard";
+        navigate(from, { replace: true });
       });
-
-      const from = location.state?.from?.pathname || "/client-dashboard";
-      navigate(from, { replace: true });
     } catch (err) {
       MySwal.fire({
         title: 'Login Failed',
@@ -50,6 +51,15 @@ const ClientLogin = () => {
       setLoading(false);
     }
   };
+
+  if (authLoading) {
+    return (
+      <div className="loading-screen">
+        <IoReload className="loading-icon" />
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="login-page">
@@ -76,8 +86,8 @@ const ClientLogin = () => {
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
-        <p>Don't have an account? <a href="/client-register">Register</a></p>
-        <p>Are you an admin by chance?<a href="/admin-login">Login</a></p>
+        <p>Don't have an account? <Link to="/client-register">Register</Link></p>
+        <p>Are you an admin by chance? <Link to="/admin-login">Login</Link></p>
       </div>
     </div>
   );

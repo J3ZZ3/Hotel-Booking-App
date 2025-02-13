@@ -201,6 +201,31 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+.back-to-home {
+    position: fixed;
+    top: 2rem;
+    left: 0.5rem;
+    padding: 0.8rem 1.5rem;
+    background: #8B0000;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    z-index: 1000;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.back-to-home:hover {
+    background: #a00000;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
 @media (max-width: 768px) {
     .help-support-content {
         padding: 1rem;
@@ -229,5 +254,12 @@
 
     .additional-support {
         padding: 2rem 1rem;
+    }
+
+    .back-to-home {
+        top: 1rem;
+        left: 0.2rem;
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
     }
 } 

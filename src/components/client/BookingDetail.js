@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../../firebase/firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
-import { IoCalendar, IoPersonCircle, IoHome, IoCall, IoArrowBack, IoPeople, IoBed, IoExpand, IoEye, IoWallet } from 'react-icons/io5';
+import { IoCalendar, IoPersonCircle, IoHome, IoCall, IoArrowBack, IoPeople, IoBed, IoExpand, IoEye, IoWallet, IoReload } from 'react-icons/io5';
 import './ClientStyles/BookingDetail.css';
 
 const InfoItem = ({ icon: Icon, label, value }) => (
@@ -22,11 +22,22 @@ const BookingDetail = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchBooking = async () => {
+    const fetchBookingAndRoom = async () => {
       try {
         const bookingDoc = await getDoc(doc(db, 'bookings', bookingId));
         if (bookingDoc.exists()) {
-          setBooking({ id: bookingDoc.id, ...bookingDoc.data() });
+          const bookingData = bookingDoc.data();
+          
+          // Fetch room details to get the image
+          const roomDoc = await getDoc(doc(db, 'rooms', bookingData.roomId));
+          const roomData = roomDoc.exists() ? roomDoc.data() : null;
+          
+          setBooking({
+            id: bookingDoc.id,
+            ...bookingData,
+            roomImage: roomData?.images?.[0] || roomData?.image || null, // Try both image formats
+            roomName: bookingData.roomName || roomData?.name || 'Room Name Not Available'
+          });
         }
       } catch (error) {
         console.error('Error fetching booking:', error);
@@ -35,10 +46,18 @@ const BookingDetail = () => {
       }
     };
 
-    fetchBooking();
+    fetchBookingAndRoom();
   }, [bookingId]);
 
-  if (loading) return <div className="loading">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="loading-screen">
+        <IoReload className="loading-icon" />
+        <p>Loading booking details...</p>
+      </div>
+    );
+  }
+  
   if (!booking) return <div className="error">Booking not found</div>;
 
   return (
@@ -49,7 +68,11 @@ const BookingDetail = () => {
 
       <div className="booking-detail-container">
         <div className="room-preview">
-          <img src={booking.roomImage} alt={booking.roomName} />
+          {booking.roomImage ? (
+            <img src={booking.roomImage} alt={booking.roomName} />
+          ) : (
+            <div className="no-image-placeholder">No image available</div>
+          )}
           <div className="status-overlay" data-status={booking.status.toLowerCase()}>
             {booking.status}
           </div>

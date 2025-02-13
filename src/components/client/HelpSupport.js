@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Navbar from './common/ClientNavbar';
 import { 
     FaQuestionCircle, 
@@ -15,6 +16,10 @@ import {
 import './ClientStyles/HelpSupport.css';
 
 const HelpSupport = () => {
+    const location = useLocation();
+    const navigate = useNavigate();
+    const isFromHome = new URLSearchParams(location.search).get('from') === 'home';
+
     const [activeCategory, setActiveCategory] = useState('booking');
 
     const supportCategories = {
@@ -107,7 +112,7 @@ const HelpSupport = () => {
 
     return (
         <div className="help-support-page">
-            <Navbar />
+            {!isFromHome && <Navbar />}
             <div className="help-support-content">
                 <div className="help-header">
                     <h1>Help & Support Center</h1>

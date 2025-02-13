@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Navbar from './common/ClientNavbar';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock, 
@@ -19,6 +20,10 @@ L.Icon.Default.mergeOptions({
 });
 
 const HotelDetails = () => {
+    const location = useLocation();
+    const navigate = useNavigate();
+    const isFromHome = new URLSearchParams(location.search).get('from') === 'home';
+
     const [activeImage, setActiveImage] = useState(0);
 
     const hotelLocation = {
@@ -51,30 +56,7 @@ const HotelDetails = () => {
 
     return (
         <div className="hotel-details-page">
-            <Navbar />
-            
-            <div className="hero-section">
-                <div className="image-slider">
-                    {images.map((image, index) => (
-                        <img
-                            key={index}
-                            src={image.url}
-                            alt={image.title}
-                            className={index === activeImage ? 'active' : ''}
-                        />
-                    ))}
-                    <div className="image-indicators">
-                        {images.map((_, index) => (
-                            <button
-                                key={index}
-                                className={`indicator ${index === activeImage ? 'active' : ''}`}
-                                onClick={() => setActiveImage(index)}
-                            />
-                        ))}
-                    </div>
-                </div>
-            </div>
-
+            {!isFromHome && <Navbar />}
             <div className="hotel-content">
                 <div className="hotel-info-section">
                     <h1>Welcome to Domicile Hotels</h1>

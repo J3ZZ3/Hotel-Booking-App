@@ -9,12 +9,16 @@ import {
   IoRestaurantOutline, 
   IoWifiOutline, 
   IoCarSportOutline, 
-  IoBusinessOutline 
+  IoBusinessOutline,
+  IoInformationCircle,
+  IoHelpCircle,
+  IoList
 } from 'react-icons/io5';
 
 const HomePage = () => {
   const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
+  const [showFabLabels, setShowFabLabels] = useState(false);
 
   useEffect(() => {
     setIsVisible(true);
@@ -79,6 +83,41 @@ const HomePage = () => {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      <div className="fab-container">
+        <div 
+          className={`fab-button main-fab ${showFabLabels ? 'active' : ''}`}
+          onClick={() => setShowFabLabels(!showFabLabels)}
+        >
+          <IoInformationCircle />
+        </div>
+        
+        <div className={`fab-buttons ${showFabLabels ? 'show' : ''}`}>
+          <button 
+            className="fab-button secondary-fab"
+            onClick={() => navigate('/virtual-tour?from=home')}
+          >
+            <IoBusinessOutline />
+            <span className="fab-label">Hotel Details</span>
+          </button>
+          
+          <button 
+            className="fab-button secondary-fab"
+            onClick={() => navigate('/help?from=home')}
+          >
+            <IoHelpCircle />
+            <span className="fab-label">Help & Support</span>
+          </button>
+          
+          <button 
+            className="fab-button secondary-fab"
+            onClick={() => navigate('/amenities?from=home')}
+          >
+            <IoList />
+            <span className="fab-label">Amenities</span>
+          </button>
         </div>
       </div>
 

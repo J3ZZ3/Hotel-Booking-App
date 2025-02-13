@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { db } from "../../firebase/firebaseConfig";
-import { collection, getDocs, query, where, addDoc, doc, updateDoc } from "firebase/firestore"; // Import addDoc, doc, and updateDoc
+import { collection, getDocs, query, where, addDoc, doc, updateDoc, getDoc } from "firebase/firestore"; // Import addDoc, doc, and updateDoc
 import Swal from "sweetalert2";
 import "./ClientStyles/BookingHistory.css";
 import { Navigate } from "react-router-dom";
@@ -24,7 +24,7 @@ const BookingHistory = () => {
         text: "You need to be logged in to view your booking history.",
         confirmButtonText: "OK",
       });
-      Navigate("/client-login"); // Redirect if not logged in
+      Navigate("/client-login");
       return;
     }
 
@@ -36,17 +36,36 @@ const BookingHistory = () => {
         );
         const querySnapshot = await getDocs(q);
 
-        const userBookings = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-          // Format dates for display
-          formattedCheckIn: new Date(doc.data().checkInDate).toLocaleDateString(),
-          formattedCheckOut: new Date(doc.data().checkOutDate).toLocaleDateString(),
-          // Ensure roomName is available
-          roomName: doc.data().roomName || 'Room Name Not Available'
-        }));
+        const bookingsPromises = querySnapshot.docs.map(async (bookingDoc) => {
+          const bookingData = bookingDoc.data();
+          
+          // Fetch room details to get the image
+          try {
+            const roomDoc = await getDoc(doc(db, "rooms", bookingData.roomId));
+            const roomData = roomDoc.exists() ? roomDoc.data() : null;
+            
+            return {
+              id: bookingDoc.id,
+              ...bookingData,
+              roomImage: roomData?.images?.[0] || roomData?.image || null, // Try both image formats
+              formattedCheckIn: new Date(bookingData.checkInDate).toLocaleDateString(),
+              formattedCheckOut: new Date(bookingData.checkOutDate).toLocaleDateString(),
+              roomName: bookingData.roomName || roomData?.name || 'Room Name Not Available'
+            };
+          } catch (error) {
+            console.error("Error fetching room data:", error);
+            return {
+              id: bookingDoc.id,
+              ...bookingData,
+              roomImage: null,
+              formattedCheckIn: new Date(bookingData.checkInDate).toLocaleDateString(),
+              formattedCheckOut: new Date(bookingData.checkOutDate).toLocaleDateString(),
+              roomName: bookingData.roomName || 'Room Name Not Available'
+            };
+          }
+        });
 
-        // Sort bookings by date (most recent first)
+        const userBookings = await Promise.all(bookingsPromises);
         userBookings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         
         setBookings(userBookings);

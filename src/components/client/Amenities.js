@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Navbar from './common/ClientNavbar';
 import { FaSwimmingPool, FaWifi, FaParking, FaCoffee, FaDumbbell, 
          FaConciergeBell, FaSpa, FaGlassMartini, FaShuttleVan, FaBed,
@@ -12,6 +13,10 @@ import { BiSolidFirstAid } from 'react-icons/bi';
 import './ClientStyles/Amenities.css';
 
 const Amenities = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isFromHome = new URLSearchParams(location.search).get('from') === 'home';
+
   const amenitiesList = [
     {
       icon: <FaSwimmingPool />,
@@ -137,7 +142,7 @@ const Amenities = () => {
 
   return (
     <div className="amenities-page">
-      <Navbar />
+      {!isFromHome && <Navbar />}
       <div className="amenities-content">
         <div className="amenities-header">
           <h1>Luxury Amenities</h1>

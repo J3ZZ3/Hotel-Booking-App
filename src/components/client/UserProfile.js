@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { db } from '../../firebase/firebaseConfig';
 import { doc, updateDoc, getDoc, setDoc } from 'firebase/firestore';
-import { IoPersonCircle, IoMail, IoCall, IoHome, IoNewspaper, IoCamera } from 'react-icons/io5';
+import { IoPersonCircle, IoMail, IoCall, IoHome, IoNewspaper, IoCamera, IoReload } from 'react-icons/io5';
 import Navbar from './common/ClientNavbar';
 import './ClientStyles/UserProfile.css';
 import Swal from 'sweetalert2';
 
 const UserProfile = () => {
-    const { currentUser } = useAuth();
+    const { currentUser, loading: authLoading } = useAuth();
     const [loading, setLoading] = useState(true);
     const [editing, setEditing] = useState(false);
     const [uploadingImage, setUploadingImage] = useState(false);
@@ -23,6 +23,8 @@ const UserProfile = () => {
 
     useEffect(() => {
         const fetchUserProfile = async () => {
+            if (!currentUser) return;
+            
             try {
                 const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
                 if (userDoc.exists()) {
@@ -33,6 +35,8 @@ const UserProfile = () => {
                 }
             } catch (error) {
                 console.error('Error fetching user profile:', error);
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -133,8 +137,13 @@ const UserProfile = () => {
         }
     };
 
-    if (loading) {
-        return <div className="loading-screen">Loading...</div>;
+    if (authLoading || loading) {
+        return (
+            <div className="loading-screen">
+                <IoReload className="loading-icon" />
+                <p>Loading profile information...</p>
+            </div>
+        );
     }
 
     return (
