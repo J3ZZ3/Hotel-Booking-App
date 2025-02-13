@@ -5,9 +5,7 @@ import {
     IoPersonCircleOutline, 
     IoLogOutOutline,
     IoBookOutline,
-    IoSettingsOutline,
     IoHelpCircleOutline,
-    IoNotificationsOutline
 } from "react-icons/io5";
 import Swal from 'sweetalert2';
 import "../ClientStyles/ClientNavbar.css";
