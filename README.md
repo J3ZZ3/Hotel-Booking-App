@@ -4,7 +4,23 @@
 Domicile Hotels Booking System is a comprehensive web application that provides a seamless hotel room booking experience. Built with React and Firebase, it offers both client-facing features for hotel guests and administrative tools for hotel management.
 
 ## Live Demo
-[Add your deployed application URL here]
+[Visit the live demo](https://hotel-booking-app-three-steel.vercel.app/)
+
+## Project Structure
+```
+domicile-hotels/
+├── src/
+│   ├── components/
+│   │   ├── admin/         # Admin-specific components
+│   │   │   └── AdminStyles/  # Admin-specific styles
+│   │   ├── client/        # Client-specific components
+│   │   │   ├── common/    # Shared client components
+│   │   │   └── ClientStyles/  # Client-specific styles
+│   │   └── shared/        # Global shared components
+│   ├── context/          # React Context providers
+│   ├── firebase/         # Firebase configuration
+│   └── assets/           # Images and static assets
+```
 
 ## Features
 
@@ -72,8 +88,8 @@ Domicile Hotels Booking System is a comprehensive web application that provides 
 ### Setup Instructions
 1. **Clone the Repository**
    ```bash
-   git clone [repository-url]
-   cd domicile-hotels
+   git clone https://github.com/J3ZZ3/Hotel-Booking-App.git
+   cd Hotel-Booking-App
    ```
 
 2. **Install Dependencies**
@@ -141,212 +157,23 @@ Domicile Hotels Booking System is a comprehensive web application that provides 
    - View all bookings
    - Process check-ins/check-outs
    - Handle booking modifications
-   - Generate reports
-
-## Contributing
-We welcome contributions! Please follow these steps:
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
 
 ## Support
 For support, please contact:
 - Email: [support@domicilehotels.com]
 - Phone: [+27 12 345 6789]
 
-## License
-[Add your license information here]
-
 ## Acknowledgments
 - React.js team
 - Firebase team
 - All contributors and supporters
 
-## Project Structure
-```
-domicile-hotels/
-├── src/
-│   ├── components/
-│   │   ├── admin/         # Admin-specific components
-│   │   │   └── AdminStyles/  # Admin-specific styles
-│   │   ├── client/        # Client-specific components
-│   │   │   ├── common/    # Shared client components
-│   │   │   └── ClientStyles/  # Client-specific styles
-│   │   └── shared/        # Global shared components
-│   ├── context/          # React Context providers
-│   ├── firebase/         # Firebase configuration
-│   └── assets/           # Images and static assets
-```
 
 ## Security Considerations
 - Secure authentication using Firebase Auth
 - Protected routes for authenticated users
 - Environment variables for sensitive data
-- Input validation and sanitization
-- CORS policies implementation
-- Regular security updates
-
-## Performance Optimization
-- Lazy loading of images
-- Component code splitting
-- Caching strategies
-- Optimized database queries
-- Minimized bundle size
-
-## Best Practices
-### Coding Standards
-- Follow React best practices
-- Use consistent naming conventions
-- Implement proper error handling
-- Write meaningful comments
-- Follow ESLint configuration
-
-### Git Workflow
-1. Create feature branches from `develop`
-2. Use meaningful commit messages
-3. Submit PRs for review
-4. Merge only after approval
-5. Keep branches up to date
-
-## Testing
-### Unit Tests
-```bash
-npm test
-```
-- Component rendering tests
-- User interaction tests
-- Context provider tests
-- Utility function tests
-
-### End-to-End Tests
-```bash
-npm run test:e2e
-```
-- User flow testing
-- Integration testing
-- Cross-browser testing
-
-## Deployment
-### Production Build
-```bash
-npm run build
-```
-
-### Deployment Checklist
-- [ ] Update environment variables
-- [ ] Run all tests
-- [ ] Build production bundle
-- [ ] Check bundle size
-- [ ] Verify Firebase configuration
-- [ ] Test payment integration
-- [ ] Validate all forms and functions
-- [ ] Check responsive design
-- [ ] Verify SEO elements
-
-## Troubleshooting
-### Common Issues
-1. **Authentication Errors**
-   - Verify Firebase credentials
-   - Check email verification status
-   - Ensure proper route protection
-
-2. **Payment Processing Issues**
-   - Validate PayPal credentials
-   - Check payment callback URLs
-   - Verify transaction logs
-
-3. **Database Connection Issues**
-   - Check Firebase rules
-   - Verify network connectivity
-   - Review database indices
-
-### Error Logging
-- Application errors are logged to Firebase Analytics
-- Critical errors trigger admin notifications
-- User feedback collection for bug reports
-
-## API Documentation
-### Firebase API
-- Authentication endpoints
-- Database operations
-- Storage interactions
-
-### PayPal Integration
-- Payment initialization
-- Transaction processing
-- Refund handling
-
-## Environment Setup
-### Development
-```bash
-# Install dependencies
-npm install
-
-# Start development server
-npm start
-
-# Run tests
-npm test
-
-# Generate build
-npm run build
-```
-
-### Production
-```bash
-# Set production environment
-export NODE_ENV=production
-
-# Install dependencies
-npm ci
-
-# Build application
-npm run build
-```
-
-## Browser Support
-- Chrome (last 2 versions)
-- Firefox (last 2 versions)
-- Safari (last 2 versions)
-- Edge (last 2 versions)
-
-## Known Issues
-- [List any known bugs or limitations]
-- [Include workarounds if available]
-
-## Future Enhancements
-- Mobile application development
-- Multi-language support
-- Advanced analytics dashboard
-- AI-powered pricing optimization
-- Virtual room tours
-- Loyalty program integration
-
-## Version History
-### v1.0.0 (Current)
-- Initial release
-- Basic booking functionality
-- User authentication
-- Admin dashboard
-
-### Planned Updates
-- v1.1.0: Enhanced reporting
-- v1.2.0: Mobile responsiveness
-- v2.0.0: Advanced features
-
-## FAQ
-1. **How do I reset my password?**
-   - Use the "Forgot Password" link on the login page
-
-2. **Can I modify my booking?**
-   - Yes, through the booking management section
-
-3. **How do I contact support?**
-   - Email: support@domicilehotels.com
-   - Phone: +27 12 345 6789
-   - In-app help center
+- Input validation 
 
 ## Resources
 - [React Documentation](https://reactjs.org/)
