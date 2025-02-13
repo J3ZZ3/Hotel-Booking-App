@@ -4,7 +4,7 @@
 Domicile Hotels Booking System is a comprehensive web application that provides a seamless hotel room booking experience. Built with React and Firebase, it offers both client-facing features for hotel guests and administrative tools for hotel management.
 
 ## Live Demo
-[Domicile Hotel](https://domicilehotels.vercel.app/)
+[Domicile Hotel](https://domicilehotel.vercel.app/)
 
 ## Project Structure
 ```
